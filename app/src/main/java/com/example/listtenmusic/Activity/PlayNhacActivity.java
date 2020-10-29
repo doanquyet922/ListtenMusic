@@ -1,5 +1,6 @@
 package com.example.listtenmusic.Activity;
 
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.FragmentManager;
@@ -7,14 +8,17 @@ import androidx.fragment.app.FragmentTransaction;
 import androidx.transition.FragmentTransitionSupport;
 import androidx.viewpager.widget.ViewPager;
 
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.graphics.Color;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.IBinder;
 import android.os.StrictMode;
 import android.util.Log;
 import android.view.View;
@@ -30,6 +34,7 @@ import com.example.listtenmusic.Fragment.FragmentMiniPlay;
 import com.example.listtenmusic.Model.BaiHat;
 import com.example.listtenmusic.Model.LayDulieutuPlayNhac;
 import com.example.listtenmusic.R;
+import com.example.listtenmusic.Service.PlayNhacService;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -43,21 +48,23 @@ public  class PlayNhacActivity extends AppCompatActivity {
 
 
     Toolbar toolbarplaynhac;
-    TextView tTimesong, tTimetong;
-    SeekBar seekBartime;
+    public  static TextView tTimesong, tTimetong;
+    public  static SeekBar seekBartime;
     public static ImageButton bPlay, bShuffle, bSkiptostart, bNext, bRepeat;
     ViewPager viewPagerPlaynhac;
     public static ArrayList<BaiHat> mangbaihat = new ArrayList<>();
     public static ViewPagerPlayNhac adapterPlaynhac;
     FragmentDiaNhac fragmentDiaNhac;
     FragmentDanhSachCacBaihat fragmentDanhSachCacBaihat;
-    public static MediaPlayer mediaPlayer;
+//    public static MediaPlayer mediaPlayer;
     public static int pos = 0;
     public static  boolean repeat = false;
     public static boolean checkrandom = false;
     boolean next = false;
     public static String TenBaiHat, LinkHinhAnh;
-
+    private boolean iboundservice=false;
+    PlayNhacService playNhacService;
+    ServiceConnection serviceConnection;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -66,15 +73,40 @@ public  class PlayNhacActivity extends AppCompatActivity {
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
         StrictMode.setThreadPolicy(policy);
 
+
+//        Log.d("BBB", "onCreate: ");
+//        if(iboundservice==true){
+//            unbindService(serviceConnection);
+//            iboundservice=false;
+//        }
         GetDataFromIntent();
-        NhanDataSauClickMiniPlay();
+//        NhanDataSauClickMiniPlay();
         init();
         eventsClick();
 
-//        Log.d("BBB", "onCreate: ");
+
+
     }
+    private void ConnectService(@Nullable final ArrayList<BaiHat> arrbaihat, @Nullable final Integer position){
+//        playNhacService.setMediaPlayer("https://quyetdaik922.000webhostapp.com/MP3/Ai%20Mang%20Co%20Don%20Di%20-%20K-ICM_%20APJ.mp3");
+        Intent intent=new Intent(this, PlayNhacService.class);
+        serviceConnection=new ServiceConnection() {
+            @Override
+            public void onServiceConnected(ComponentName name, IBinder service) {
+                PlayNhacService.BoundExample binder= (PlayNhacService.BoundExample) service;
+                playNhacService=binder.getService();
+                playNhacService.setMediaPlayer(arrbaihat.get(position).getLinkBaiHat());
 
+                iboundservice=true;
+            }
 
+            @Override
+            public void onServiceDisconnected(ComponentName name) {
+                iboundservice=false;
+            }
+        };
+        bindService(intent,serviceConnection,BIND_AUTO_CREATE);
+    }
 
     private void eventsClick() {
         final Handler handler = new Handler();
@@ -94,11 +126,11 @@ public  class PlayNhacActivity extends AppCompatActivity {
         bPlay.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (mediaPlayer.isPlaying()) {
-                    mediaPlayer.pause();
+                if (PlayNhacService.mediaPlayer.isPlaying()) {
+                    PlayNhacService.mediaPlayer.pause();
                     bPlay.setImageResource(drawable.play_playnhac);
                 } else {
-                    mediaPlayer.start();
+                    PlayNhacService.mediaPlayer.start();
                     bPlay.setImageResource(R.drawable.pause_playnhac);
                 }
             }
@@ -153,17 +185,17 @@ public  class PlayNhacActivity extends AppCompatActivity {
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-                mediaPlayer.seekTo(seekBar.getProgress());
+                PlayNhacService.mediaPlayer.seekTo(seekBar.getProgress());
             }
         });
         bNext.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (mangbaihat.size() > 0) {
-                    if (mediaPlayer.isPlaying() || mediaPlayer != null) {
-                        mediaPlayer.stop();
-                        mediaPlayer.release();
-                        mediaPlayer = null;
+                    if (PlayNhacService.mediaPlayer.isPlaying() || PlayNhacService.mediaPlayer != null) {
+                        PlayNhacService.mediaPlayer.stop();
+                        PlayNhacService.mediaPlayer.release();
+                        PlayNhacService.mediaPlayer = null;
                     }
                     if (pos < (mangbaihat.size())) {
                         bPlay.setImageResource(pause_playnhac);
@@ -187,7 +219,8 @@ public  class PlayNhacActivity extends AppCompatActivity {
                             pos = 0;
 
                         }
-                        new PlayMP3().execute(mangbaihat.get(pos).getLinkBaiHat());
+//                        new PlayMP3().execute(mangbaihat.get(pos).getLinkBaiHat());
+                        ConnectService(mangbaihat,pos);
                         fragmentDiaNhac.PlayNhac(mangbaihat.get(pos).getHinhBaiHat());
                         getSupportActionBar().setTitle(mangbaihat.get(pos).getTenBaiHat());
                         UpdateTime();
@@ -213,10 +246,10 @@ public  class PlayNhacActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 if (mangbaihat.size() > 0) {
-                    if (mediaPlayer.isPlaying() || mediaPlayer != null) {
-                        mediaPlayer.stop();
-                        mediaPlayer.release();
-                        mediaPlayer = null;
+                    if (PlayNhacService.mediaPlayer.isPlaying() || PlayNhacService.mediaPlayer != null) {
+                        PlayNhacService.mediaPlayer.stop();
+                        PlayNhacService.mediaPlayer.release();
+                        PlayNhacService.mediaPlayer = null;
                     }
                     if (pos < (mangbaihat.size())) {
                         bPlay.setImageResource(pause_playnhac);
@@ -238,7 +271,8 @@ public  class PlayNhacActivity extends AppCompatActivity {
                             pos = index;
                         }
 
-                        new PlayMP3().execute(mangbaihat.get(pos).getLinkBaiHat());
+//                        new PlayMP3().execute(mangbaihat.get(pos).getLinkBaiHat());
+                        ConnectService(mangbaihat,pos);
                         fragmentDiaNhac.PlayNhac(mangbaihat.get(pos).getHinhBaiHat());
                         getSupportActionBar().setTitle(mangbaihat.get(pos).getTenBaiHat());
                         UpdateTime();
@@ -316,7 +350,8 @@ public  class PlayNhacActivity extends AppCompatActivity {
                 getSupportActionBar().setTitle(mangbaihat.get(pos).getTenBaiHat());
             }else {
                 getSupportActionBar().setTitle(mangbaihat.get(pos).getTenBaiHat());
-                new PlayMP3().execute(mangbaihat.get(0).getLinkBaiHat());
+//                new PlayMP3().execute(mangbaihat.get(pos).getLinkBaiHat());
+                ConnectService(mangbaihat,pos);
                 bPlay.setImageResource(R.drawable.pause_playnhac);
                 TenBaiHat = mangbaihat.get(0).getTenBaiHat();
                 LinkHinhAnh = mangbaihat.get(0).getHinhBaiHat();
@@ -324,64 +359,65 @@ public  class PlayNhacActivity extends AppCompatActivity {
         }
     }
 
-    class PlayMP3 extends AsyncTask<String, Void, String> {
-        @Override
-        protected String doInBackground(String... strings) {
-            return strings[0];
-        }
-
-        @Override
-        protected void onPostExecute(String baihat) {
-            super.onPostExecute(baihat);
-            try {
-                if (mediaPlayer == null) {
-                    mediaPlayer = new MediaPlayer();
-                    mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
-                    mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-                        @Override
-                        public void onCompletion(MediaPlayer mp) {
-                            mediaPlayer.stop();
-                            mediaPlayer.reset();
-                        }
-                    });
-                }
-                if (mediaPlayer.isPlaying()) {
-                    mediaPlayer.stop();
-                    mediaPlayer.reset();
-                }
-                if (!baihat.equals("")) {
-                    mediaPlayer=new MediaPlayer();
-                    mediaPlayer.setDataSource(baihat);
-                    mediaPlayer.prepare();
-                }
-
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            mediaPlayer.start();
-//            Log.d("CCC", "init: "+mediaPlayer.getDuration());
-            TimeSong();
-            UpdateTime();
-        }
-    }
+//    class PlayMP3 extends AsyncTask<String, Void, String> {
+//        @Override
+//        protected String doInBackground(String... strings) {
+//            return strings[0];
+//        }
+//
+//        @Override
+//        protected void onPostExecute(String baihat) {
+//            super.onPostExecute(baihat);
+//            try {
+//                if (mediaPlayer == null) {
+//                    mediaPlayer = new MediaPlayer();
+//                    mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+//                    mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+//                        @Override
+//                        public void onCompletion(MediaPlayer mp) {
+//                            mediaPlayer.stop();
+//                            mediaPlayer.reset();
+//                        }
+//                    });
+//                }
+//                if (mediaPlayer.isPlaying()) {
+//                    mediaPlayer.stop();
+//                    mediaPlayer.reset();
+//                }
+//                if (!baihat.equals("")) {
+//                    mediaPlayer=new MediaPlayer();
+//                    mediaPlayer.setDataSource(baihat);
+//                    mediaPlayer.prepare();
+//                }
+//
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
+//            mediaPlayer.start();
+////            Log.d("CCC", "init: "+mediaPlayer.getDuration());
+//            TimeSong();
+//            UpdateTime();
+//        }
+//    }
 
     private void TimeSong() {
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("mm:ss");
-        tTimetong.setText(simpleDateFormat.format(mediaPlayer.getDuration()));
-        seekBartime.setMax(mediaPlayer.getDuration());
+        tTimetong.setText(simpleDateFormat.format(PlayNhacService.mediaPlayer.getDuration()));
+        seekBartime.setMax(PlayNhacService.mediaPlayer.getDuration());
     }
 
-    private void UpdateTime() {
+    public  void UpdateTime() {
         final Handler handler = new Handler();
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
-                if (mediaPlayer != null) {
-                    seekBartime.setProgress(mediaPlayer.getCurrentPosition());
+                if (PlayNhacService.mediaPlayer != null) {
+                    Log.d("BBB", "run: "+PlayNhacService.mediaPlayer.getCurrentPosition());
+                    seekBartime.setProgress(PlayNhacService.mediaPlayer.getCurrentPosition());
                     SimpleDateFormat simpleDateFormat = new SimpleDateFormat("mm:ss");
-                    tTimesong.setText(simpleDateFormat.format(mediaPlayer.getCurrentPosition()));
+                    tTimesong.setText(simpleDateFormat.format(PlayNhacService.mediaPlayer.getCurrentPosition()));
                     handler.postDelayed(this, 300);
-                    mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                    PlayNhacService.mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
                         @Override
                         public void onCompletion(MediaPlayer mp) {
                             next = true;
@@ -422,7 +458,8 @@ public  class PlayNhacActivity extends AppCompatActivity {
                             pos = 0;
 
                         }
-                        new PlayMP3().execute(mangbaihat.get(pos).getLinkBaiHat());
+//                        new PlayMP3().execute(mangbaihat.get(pos).getLinkBaiHat());
+                        ConnectService(mangbaihat,pos);
                         fragmentDiaNhac.PlayNhac(mangbaihat.get(pos).getHinhBaiHat());
                         getSupportActionBar().setTitle(mangbaihat.get(pos).getTenBaiHat());
                         UpdateTime();

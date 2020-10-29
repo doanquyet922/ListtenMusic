@@ -9,11 +9,13 @@
         android:id="@+id/reA2"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
+
         <RelativeLayout
-            android:layout_above="@id/reMini"
             android:id="@+id/reA1"
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="match_parent"
+            android:layout_above="@id/reMini"
+            android:layout_marginBottom="-728dp">
 
             <LinearLayout
                 android:id="@+id/linearLayout"
@@ -35,15 +37,16 @@
                     android:paddingBottom="20dp"
                     android:scaleType="fitCenter"
                     android:src="@drawable/menu" />
+
                 <com.google.android.material.tabs.TabLayout
+                    android:id="@+id/tabLayoutmain"
                     android:layout_width="0dp"
                     android:layout_height="60dp"
                     android:layout_weight="3"
                     android:background="@null"
-                    app:tabMode="fixed"
-                    app:tabTextColor="#ffffff"
                     app:tabIndicatorColor="#FFC107"
-                    android:id="@+id/tabLayoutmain"/>
+                    app:tabMode="fixed"
+                    app:tabTextColor="#ffffff" />
 
             </LinearLayout>
 
@@ -52,9 +55,11 @@
                 android:id="@+id/viewpagerLayoutmain"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_below="@id/linearLayout" />
+                android:layout_below="@id/linearLayout"
+                android:layout_marginTop="0dp" />
 
         </RelativeLayout>
+
         <RelativeLayout
            android:layout_alignParentBottom="true"
             android:id="@+id/reMini"
