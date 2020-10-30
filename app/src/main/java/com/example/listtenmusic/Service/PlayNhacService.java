@@ -38,23 +38,27 @@ import static com.example.listtenmusic.R.drawable.pause_playnhac;
 public class PlayNhacService extends Service {
     IBinder iBinder = new BoundExample();
     ArrayList<BaiHat> arr;
+    public static boolean isNext = false;
     boolean next;
-    public  static MediaPlayer mediaPlayer;
+    public static MediaPlayer mediaPlayer=new MediaPlayer();
+
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
         return iBinder;
+
     }
 
     @Override
     public void onCreate() {
         super.onCreate();
-
     }
 
     @Override
     public boolean onUnbind(Intent intent) {
+
         return super.onUnbind(intent);
+
     }
 
     @Override
@@ -68,13 +72,16 @@ public class PlayNhacService extends Service {
         }
     }
 
-//    public String getCurrentTime() {
+    //    public String getCurrentTime() {
 //        SimpleDateFormat dateFormat = new SimpleDateFormat("MM:mm:ss MM/dd/yyyy");
 //        return (dateFormat.format(new Date()));
 //    }
-    public void setMediaPlayer(String link){
-        new PlayMP3().execute(link);
+    public void setMediaPlayer(String link) {
+//        mediaPlayer=null;
+////        new PlayMP3().execute(link);
+        PlayNhac(link);
     }
+
     class PlayMP3 extends AsyncTask<String, Void, String> {
         @Override
         protected String doInBackground(String... strings) {
@@ -101,7 +108,7 @@ public class PlayNhacService extends Service {
                     mediaPlayer.reset();
                 }
                 if (!baihat.equals("")) {
-                    mediaPlayer=new MediaPlayer();
+                    mediaPlayer = new MediaPlayer();
                     mediaPlayer.setDataSource(baihat);
                     mediaPlayer.prepare();
                 }
@@ -112,94 +119,97 @@ public class PlayNhacService extends Service {
             mediaPlayer.start();
 //            Log.d("CCC", "init: "+mediaPlayer.getDuration());
             TimeSong();
-            PlayNhacActivity playNhacActivity=new PlayNhacActivity();
+            PlayNhacActivity playNhacActivity = new PlayNhacActivity();
             playNhacActivity.UpdateTime();
+            mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                @Override
+                public void onCompletion(MediaPlayer mp) {
+                    isNext = true;
+                    try {
+                        Thread.sleep(3000);
+                        PlayNhacActivity.bNext.callOnClick();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
         }
     }
+
+
+    ////
+    private void PlayNhac(String link) {
+        try {
+            if (mediaPlayer != null) {
+                if (mediaPlayer.isPlaying()) {
+                    mediaPlayer.stop();
+                    mediaPlayer.reset();
+                    mediaPlayer.release();
+                    mediaPlayer = null;
+                }
+                mediaPlayer = new MediaPlayer();
+                mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+                mediaPlayer.setDataSource(link);
+                mediaPlayer.prepare();
+                mediaPlayer.start();
+                mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                    @Override
+                    public void onCompletion(MediaPlayer mp) {
+                        try {
+                            Thread.sleep(3000);
+                            PlayNhacActivity.bNext.callOnClick();
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+
+                    }
+                });
+            }
+//            if (mediaPlayer == null) {
+//                mediaPlayer = new MediaPlayer();
+//                mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+//                mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+//                    @Override
+//                    public void onCompletion(MediaPlayer mp) {
+//                        mediaPlayer.stop();
+//                        mediaPlayer.reset();
+//                    }
+//                });
+//            }
+
+//            if (!link.equals("")) {
+////                mediaPlayer=new MediaPlayer();
+//                mediaPlayer.setDataSource(link);
+//                mediaPlayer.prepare();
+//            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+//        mediaPlayer.start();
+//            Log.d("CCC", "init: "+mediaPlayer.getDuration());
+        TimeSong();
+        PlayNhacActivity playNhacActivity = new PlayNhacActivity();
+        playNhacActivity.UpdateTime();
+//        mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+//            @Override
+//            public void onCompletion(MediaPlayer mp) {
+//                isNext=true;
+//                try {
+//                    Thread.sleep(3000);
+//                    PlayNhacActivity.bNext.callOnClick();
+//                } catch (InterruptedException e) {
+//                    e.printStackTrace();
+//                }
+//            }
+//        });
+    }
+
     private void TimeSong() {
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("mm:ss");
         PlayNhacActivity.tTimetong.setText(simpleDateFormat.format(mediaPlayer.getDuration()));
         PlayNhacActivity.seekBartime.setMax(mediaPlayer.getDuration());
     }
-//    public  void UpdateTime() {
-//        final Handler handler = new Handler();
-//        handler.postDelayed(new Runnable() {
-//            @Override
-//            public void run() {
-//                if (PlayNhacService.mediaPlayer != null) {
-//                    PlayNhacActivity.seekBartime.setProgress(PlayNhacService.mediaPlayer.getCurrentPosition());
-//                    SimpleDateFormat simpleDateFormat = new SimpleDateFormat("mm:ss");
-//                    PlayNhacActivity.tTimesong.setText(simpleDateFormat.format(PlayNhacService.mediaPlayer.getCurrentPosition()));
-//                    handler.postDelayed(this, 300);
-//                    PlayNhacService.mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-//                        @Override
-//                        public void onCompletion(MediaPlayer mp) {
-//                            next = true;
-//                            try {
-//                                Thread.sleep(1000);
-//                            } catch (InterruptedException e) {
-//                                e.printStackTrace();
-//                            }
-//                        }
-//                    });
-//                }
-//            }
-//        }, 300);
-//        final Handler handler1 = new Handler();
-//        handler1.postDelayed(new Runnable() {
-//            @Override
-//            public void run() {
-//                if(next==true){
-//                    if (PlayNhacActivity.pos < (PlayNhacActivity.mangbaihat.size())) {
-//                        PlayNhacActivity.bPlay.setImageResource(pause_playnhac);
-//                        PlayNhacActivity.pos++;
-//                        if (PlayNhacActivity.repeat == true) {
-//                            if (PlayNhacActivity.pos == 0) {
-//                                PlayNhacActivity.pos = PlayNhacActivity.mangbaihat.size();
-//                            }
-//                            PlayNhacActivity.pos -= 1;
-//
-//                        }
-//                        if (PlayNhacActivity.checkrandom == true) {
-//                            Random random = new Random();
-//                            int index = random.nextInt(PlayNhacActivity.mangbaihat.size());
-//                            if (index == PlayNhacActivity.pos) {
-//                                PlayNhacActivity.pos = index - 1;
-//                            }
-//                            PlayNhacActivity.pos = index;
-//                        }
-//                        if (PlayNhacActivity.pos > (PlayNhacActivity.mangbaihat.size() - 1)) {
-//                            PlayNhacActivity.pos = 0;
-//
-//                        }
-////                        new PlayMP3().execute(mangbaihat.get(pos).getLinkBaiHat());
-//                        ConnectService(mangbaihat,pos);
-//                        fragmentDiaNhac.PlayNhac(mangbaihat.get(pos).getHinhBaiHat());
-//                        getSupportActionBar().setTitle(mangbaihat.get(pos).getTenBaiHat());
-//                        UpdateTime();
-//                        PlayNhacActivity.TenBaiHat = PlayNhacActivity.mangbaihat.get(PlayNhacActivity.pos).getTenBaiHat();
-//                        PlayNhacActivity.LinkHinhAnh = PlayNhacActivity.mangbaihat.get(PlayNhacActivity.pos).getHinhBaiHat();
-//                    }
-//
-//                    bSkiptostart.setClickable(false);
-//                    bNext.setClickable(false);
-//                    Handler handler1 = new Handler();
-//                    handler1.postDelayed(new Runnable() {
-//                        @Override
-//                        public void run() {
-//                            bSkiptostart.setClickable(true);
-//                            bNext.setClickable(true);
-//                        }
-//                    }, 5000);
-//                    next=false;
-//                    handler1.removeCallbacks(this);
-//                }else {
-//                    handler1.postDelayed(this,1000);
-//                }
-//            }
-//        }, 1000);
-//
-//    }
 
 
 }

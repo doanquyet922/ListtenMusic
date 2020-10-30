@@ -24,6 +24,7 @@ import androidx.fragment.app.Fragment;
 
 import com.example.listtenmusic.Activity.PlayNhacActivity;
 import com.example.listtenmusic.R;
+import com.example.listtenmusic.Service.PlayNhacService;
 import com.squareup.picasso.Picasso;
 
 import java.util.Random;
@@ -49,11 +50,11 @@ public class FragmentMiniPlay  extends Fragment {
         bPlay.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (PlayNhacActivity.mediaPlayer.isPlaying()) {
-                    PlayNhacActivity.mediaPlayer.pause();
+                if (PlayNhacService.mediaPlayer.isPlaying()) {
+                    PlayNhacService.mediaPlayer.pause();
                     bPlay.setImageResource(R.drawable.play1);
                 } else {
-                    PlayNhacActivity.mediaPlayer.start();
+                    PlayNhacService.mediaPlayer.start();
                     bPlay.setImageResource(R.drawable.pause1);
                 }
             }
@@ -62,14 +63,12 @@ public class FragmentMiniPlay  extends Fragment {
             @Override
             public void onClick(View v) {
                 PlayNhacActivity.bSkiptostart.callOnClick();
-
             }
         });
         bNext.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 PlayNhacActivity.bNext.callOnClick();
-
             }
         });
         final String[] t = {""};
@@ -80,12 +79,12 @@ public class FragmentMiniPlay  extends Fragment {
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
-                if (PlayNhacActivity.mediaPlayer != null) {
-                    if (PlayNhacActivity.mediaPlayer.isPlaying()) {
+                if (PlayNhacService.mediaPlayer != null) {
+                    if (PlayNhacService.mediaPlayer.isPlaying()) {
                         t[0] =PlayNhacActivity.TenBaiHat+"";
                         tTenBaiHat.setText(t[0]);
                         Picasso.with(getActivity()).load(PlayNhacActivity.LinkHinhAnh).into(imChay);
-                        k[0] =PlayNhacActivity.mediaPlayer.getDuration();
+                        k[0] =PlayNhacService.mediaPlayer.getDuration();
                         bPlay.setImageResource(R.drawable.pause1);
                     }
                     else {
@@ -104,13 +103,13 @@ public class FragmentMiniPlay  extends Fragment {
                 if(d!=k[0]){
                     d=k[0];
                     progressBar.setMax(d);
-                    if(PlayNhacActivity.mediaPlayer!=null) {
-                        progressBar.setProgress(PlayNhacActivity.mediaPlayer.getCurrentPosition());
+                    if(PlayNhacService.mediaPlayer!=null) {
+                        progressBar.setProgress(PlayNhacService.mediaPlayer.getCurrentPosition());
                     }
                 }
-                handlerProgress.postDelayed(this,500);
+                handlerProgress.postDelayed(this,300);
             }
-        },500);
+        },300);
         return view;
     }
 }

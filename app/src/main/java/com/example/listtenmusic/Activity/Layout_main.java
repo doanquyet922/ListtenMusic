@@ -88,53 +88,43 @@ public static int du;
             msg = "Thiết bị chưa kết nối internet";
         }
         Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
-        startService(new Intent(Layout_main.this, PlayNhacService.class));
-//        reMini.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                mediaPlayerLU=PlayNhacActivity.mediaPlayer;
-//                du=PlayNhacActivity.mediaPlayer.getCurrentPosition();
-//
-//                Intent intent = new Intent(Layout_main.this,PlayNhacActivity.class);
-//                ArrayList<BaiHat> mangbaihat=PlayNhacActivity.mangbaihat;
-////                PlayNhacActivity.bRepeat.setImageResource(R.drawable.repeat_true_playnhac);
-//                int pos=PlayNhacActivity.pos;
-//                boolean repeat=PlayNhacActivity.repeat;
-//                boolean checkrandom=PlayNhacActivity.checkrandom;
-//
-//                LayDulieutuPlayNhac layDulieutuPlayNhac=new LayDulieutuPlayNhac(mangbaihat,pos,repeat,checkrandom);
-////                intent.putExtra("mangbaihat",mangbaihat);
-////                intent.putExtra("mediaplayer", (CharSequence) mediaPlayer);
-//                intent.putExtra("key","001");
-//                intent.putExtra("miniplay",layDulieutuPlayNhac);
-//                startActivity(intent);
-//
-//            }
-//        });
+//        startService(new Intent(Layout_main.this, PlayNhacService.class));
+        reMini.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(Layout_main.this,PlayNhacActivity.class);
+                ArrayList<BaiHat> mangbaihat=PlayNhacActivity.mangbaihat;
+//                PlayNhacActivity.bRepeat.setImageResource(R.drawable.repeat_true_playnhac);
+                int pos=PlayNhacActivity.pos;
+                boolean repeat=PlayNhacActivity.repeat;
+                boolean checkrandom=PlayNhacActivity.checkrandom;
 
-//        final Handler handler = new Handler();
-//        handler.postDelayed(new Runnable() {
-//            @Override
-//            public void run() {
-//                if (PlayNhacActivity.mediaPlayer != null) {
-//                    if (PlayNhacActivity.mediaPlayer.isPlaying()) {
-//                        reMini.setVisibility(View.VISIBLE);
-//                        reMini.setOnClickListener(new View.OnClickListener() {
-//                            @Override
-//                            public void onClick(View v) {
-////                                Intent intent =new Intent(Layout_main.this,PlayNhacActivity.class);
-////                                startActivity(intent);
-////                                PlayNhacActivity.
-//                            }
-//                        });
-//                    }
-//                }
-//                else {
+                LayDulieutuPlayNhac layDulieutuPlayNhac=new LayDulieutuPlayNhac(mangbaihat,pos,repeat,checkrandom);
+//                intent.putExtra("mangbaihat",mangbaihat);
+//                intent.putExtra("mediaplayer", (CharSequence) mediaPlayer);
+                intent.putExtra("key","001");
+                intent.putExtra("miniplay",layDulieutuPlayNhac);
+                startActivity(intent);
+
+            }
+        });
+
+        final Handler handler = new Handler();
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                if (PlayNhacService.mediaPlayer != null) {
+                    if (PlayNhacService.mediaPlayer.isPlaying()) {
+                        reMini.setVisibility(View.VISIBLE);
+
+                    }
+                }
+                else {
 //                    reMini.setVisibility(View.GONE);
-//                }
-//                handler.postDelayed(this,300);
-//            }
-//        }, 300);
+                }
+                handler.postDelayed(this,300);
+            }
+        }, 300);
     }
 
     private void events() {

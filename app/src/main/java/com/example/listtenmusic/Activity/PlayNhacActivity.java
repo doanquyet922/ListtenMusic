@@ -44,27 +44,28 @@ import java.util.Random;
 import static com.example.listtenmusic.R.*;
 import static com.example.listtenmusic.R.drawable.pause_playnhac;
 
-public  class PlayNhacActivity extends AppCompatActivity {
+public class PlayNhacActivity extends AppCompatActivity {
 
 
     Toolbar toolbarplaynhac;
-    public  static TextView tTimesong, tTimetong;
-    public  static SeekBar seekBartime;
+    public static TextView tTimesong, tTimetong;
+    public static SeekBar seekBartime;
     public static ImageButton bPlay, bShuffle, bSkiptostart, bNext, bRepeat;
     ViewPager viewPagerPlaynhac;
     public static ArrayList<BaiHat> mangbaihat = new ArrayList<>();
     public static ViewPagerPlayNhac adapterPlaynhac;
     FragmentDiaNhac fragmentDiaNhac;
     FragmentDanhSachCacBaihat fragmentDanhSachCacBaihat;
-//    public static MediaPlayer mediaPlayer;
+    public static MediaPlayer mediaPlayer;
     public static int pos = 0;
-    public static  boolean repeat = false;
+    public static boolean repeat = false;
     public static boolean checkrandom = false;
     boolean next = false;
     public static String TenBaiHat, LinkHinhAnh;
-    private boolean iboundservice=false;
+    private boolean iboundservice = false;
     PlayNhacService playNhacService;
     ServiceConnection serviceConnection;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -85,27 +86,27 @@ public  class PlayNhacActivity extends AppCompatActivity {
         eventsClick();
 
 
-
     }
-    private void ConnectService(@Nullable final ArrayList<BaiHat> arrbaihat, @Nullable final Integer position){
+
+    private void ConnectService(@Nullable final ArrayList<BaiHat> arrbaihat, @Nullable final Integer position) {
 //        playNhacService.setMediaPlayer("https://quyetdaik922.000webhostapp.com/MP3/Ai%20Mang%20Co%20Don%20Di%20-%20K-ICM_%20APJ.mp3");
-        Intent intent=new Intent(this, PlayNhacService.class);
-        serviceConnection=new ServiceConnection() {
+        Intent intent = new Intent(PlayNhacActivity.this, PlayNhacService.class);
+        serviceConnection = new ServiceConnection() {
             @Override
             public void onServiceConnected(ComponentName name, IBinder service) {
-                PlayNhacService.BoundExample binder= (PlayNhacService.BoundExample) service;
-                playNhacService=binder.getService();
+                PlayNhacService.BoundExample binder = (PlayNhacService.BoundExample) service;
+                playNhacService = binder.getService();
                 playNhacService.setMediaPlayer(arrbaihat.get(position).getLinkBaiHat());
-
-                iboundservice=true;
+                iboundservice = true;
             }
 
             @Override
             public void onServiceDisconnected(ComponentName name) {
-                iboundservice=false;
+                iboundservice = false;
             }
         };
-        bindService(intent,serviceConnection,BIND_AUTO_CREATE);
+        bindService(intent, serviceConnection, BIND_AUTO_CREATE);
+
     }
 
     private void eventsClick() {
@@ -192,11 +193,11 @@ public  class PlayNhacActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 if (mangbaihat.size() > 0) {
-                    if (PlayNhacService.mediaPlayer.isPlaying() || PlayNhacService.mediaPlayer != null) {
-                        PlayNhacService.mediaPlayer.stop();
-                        PlayNhacService.mediaPlayer.release();
-                        PlayNhacService.mediaPlayer = null;
-                    }
+//                    if (PlayNhacService.mediaPlayer.isPlaying() || PlayNhacService.mediaPlayer != null) {
+//                            PlayNhacService.mediaPlayer.stop();
+//                            PlayNhacService.mediaPlayer.release();
+//                            PlayNhacService.mediaPlayer = null;
+//                    }
                     if (pos < (mangbaihat.size())) {
                         bPlay.setImageResource(pause_playnhac);
                         pos++;
@@ -220,7 +221,7 @@ public  class PlayNhacActivity extends AppCompatActivity {
 
                         }
 //                        new PlayMP3().execute(mangbaihat.get(pos).getLinkBaiHat());
-                        ConnectService(mangbaihat,pos);
+                        ConnectService(mangbaihat, pos);
                         fragmentDiaNhac.PlayNhac(mangbaihat.get(pos).getHinhBaiHat());
                         getSupportActionBar().setTitle(mangbaihat.get(pos).getTenBaiHat());
                         UpdateTime();
@@ -246,11 +247,11 @@ public  class PlayNhacActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 if (mangbaihat.size() > 0) {
-                    if (PlayNhacService.mediaPlayer.isPlaying() || PlayNhacService.mediaPlayer != null) {
-                        PlayNhacService.mediaPlayer.stop();
-                        PlayNhacService.mediaPlayer.release();
-                        PlayNhacService.mediaPlayer = null;
-                    }
+//                    if (PlayNhacService.mediaPlayer.isPlaying() || PlayNhacService.mediaPlayer != null) {
+//                        PlayNhacService.mediaPlayer.stop();
+//                        PlayNhacService.mediaPlayer.release();
+//                        PlayNhacService.mediaPlayer = null;
+//                    }
                     if (pos < (mangbaihat.size())) {
                         bPlay.setImageResource(pause_playnhac);
                         pos--;
@@ -272,7 +273,7 @@ public  class PlayNhacActivity extends AppCompatActivity {
                         }
 
 //                        new PlayMP3().execute(mangbaihat.get(pos).getLinkBaiHat());
-                        ConnectService(mangbaihat,pos);
+                        ConnectService(mangbaihat, pos);
                         fragmentDiaNhac.PlayNhac(mangbaihat.get(pos).getHinhBaiHat());
                         getSupportActionBar().setTitle(mangbaihat.get(pos).getTenBaiHat());
                         UpdateTime();
@@ -345,19 +346,15 @@ public  class PlayNhacActivity extends AppCompatActivity {
 //                mediaPlayer.stop();
 //                mediaPlayer.reset();
 //            }
-            Intent intent=getIntent();
-            if (intent.hasExtra("key")) {
-                getSupportActionBar().setTitle(mangbaihat.get(pos).getTenBaiHat());
-            }else {
-                getSupportActionBar().setTitle(mangbaihat.get(pos).getTenBaiHat());
+                getSupportActionBar().setTitle(mangbaihat.get(0).getTenBaiHat());
 //                new PlayMP3().execute(mangbaihat.get(pos).getLinkBaiHat());
-                ConnectService(mangbaihat,pos);
+                ConnectService(mangbaihat, 0);
                 bPlay.setImageResource(R.drawable.pause_playnhac);
                 TenBaiHat = mangbaihat.get(0).getTenBaiHat();
                 LinkHinhAnh = mangbaihat.get(0).getHinhBaiHat();
             }
         }
-    }
+
 
 //    class PlayMP3 extends AsyncTask<String, Void, String> {
 //        @Override
@@ -400,106 +397,108 @@ public  class PlayNhacActivity extends AppCompatActivity {
 //        }
 //    }
 
-    private void TimeSong() {
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("mm:ss");
-        tTimetong.setText(simpleDateFormat.format(PlayNhacService.mediaPlayer.getDuration()));
-        seekBartime.setMax(PlayNhacService.mediaPlayer.getDuration());
-    }
-
-    public  void UpdateTime() {
+    //    private void TimeSong() {
+//        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("mm:ss");
+//        tTimetong.setText(simpleDateFormat.format(PlayNhacService.mediaPlayer.getDuration()));
+//        seekBartime.setMax(PlayNhacService.mediaPlayer.getDuration());
+//    }
+    public void UpdateTime() {
         final Handler handler = new Handler();
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
                 if (PlayNhacService.mediaPlayer != null) {
-                    Log.d("BBB", "run: "+PlayNhacService.mediaPlayer.getCurrentPosition());
+//                    Log.d("BBB", "run: "+PlayNhacService.mediaPlayer.getCurrentPosition());
                     seekBartime.setProgress(PlayNhacService.mediaPlayer.getCurrentPosition());
                     SimpleDateFormat simpleDateFormat = new SimpleDateFormat("mm:ss");
                     tTimesong.setText(simpleDateFormat.format(PlayNhacService.mediaPlayer.getCurrentPosition()));
-                    handler.postDelayed(this, 300);
-                    PlayNhacService.mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-                        @Override
-                        public void onCompletion(MediaPlayer mp) {
-                            next = true;
-                            try {
-                                Thread.sleep(1000);
-                            } catch (InterruptedException e) {
-                                e.printStackTrace();
-                            }
-                        }
-                    });
+//                    if (PlayNhacService.isNext == true) {
+//                        next = true;
+//                        try {
+//                            Thread.sleep(5000);
+//                        } catch (InterruptedException e) {
+//                            e.printStackTrace();
+//                        }
+//                    }
+                    handler.postDelayed(this, 250);
                 }
             }
-        }, 300);
-        final Handler handler1 = new Handler();
-        handler1.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                if(next==true){
-                    if (pos < (mangbaihat.size())) {
-                        bPlay.setImageResource(pause_playnhac);
-                        pos++;
-                        if (repeat == true) {
-                            if (pos == 0) {
-                                pos = mangbaihat.size();
-                            }
-                            pos -= 1;
+        }, 250);
+//        final Handler handler1 = new Handler();
+//        handler1.postDelayed(new Runnable() {
+//            @Override
+//            public void run() {
+//
+//                if (next == true) {
+//                    if (pos < (mangbaihat.size())) {
+//                        bPlay.setImageResource(pause_playnhac);
+//                        pos++;
+//                        if (repeat == true) {
+//                            if (pos == 0) {
+//                                pos = mangbaihat.size();
+//                            }
+//                            pos -= 1;
+//
+//                        }
+//                        if (checkrandom == true) {
+//                            Random random = new Random();
+//                            int index = random.nextInt(mangbaihat.size());
+//                            if (index == pos) {
+//                                pos = index - 1;
+//                            }
+//                            pos = index;
+//                        }
+//                        if (pos > (mangbaihat.size() - 1)) {
+//                            pos = 0;
+//
+//                        }
+////                        new PlayMP3().execute(mangbaihat.get(pos).getLinkBaiHat());
+//                        ConnectService(mangbaihat, pos);
+////
+////                        Log.d("CCC", "run: " + mangbaihat.get(pos).getLinkBaiHat());
+////                        fragmentDiaNhac.PlayNhac(mangbaihat.get(pos).getHinhBaiHat());
+////                        getSupportActionBar().setTitle(mangbaihat.get(pos).getTenBaiHat());
+//                        UpdateTime();
+//
+//                        TenBaiHat = mangbaihat.get(pos).getTenBaiHat();
+//                        LinkHinhAnh = mangbaihat.get(pos).getHinhBaiHat();
+//                    }
+//
+//                    bSkiptostart.setClickable(false);
+//                    bNext.setClickable(false);
+//                    Handler handler1 = new Handler();
+//                    handler1.postDelayed(new Runnable() {
+//                        @Override
+//                        public void run() {
+//                            bSkiptostart.setClickable(true);
+//                            bNext.setClickable(true);
+//                        }
+//                    }, 5000);
+//                    next = false;
+//                    handler1.removeCallbacks(this);
+//                } else {
+//                    handler1.postDelayed(this, 1000);
+//                }
+//            }
+//        }, 1000);
 
-                        }
-                        if (checkrandom == true) {
-                            Random random = new Random();
-                            int index = random.nextInt(mangbaihat.size());
-                            if (index == pos) {
-                                pos = index - 1;
-                            }
-                            pos = index;
-                        }
-                        if (pos > (mangbaihat.size() - 1)) {
-                            pos = 0;
-
-                        }
-//                        new PlayMP3().execute(mangbaihat.get(pos).getLinkBaiHat());
-                        ConnectService(mangbaihat,pos);
-                        fragmentDiaNhac.PlayNhac(mangbaihat.get(pos).getHinhBaiHat());
-                        getSupportActionBar().setTitle(mangbaihat.get(pos).getTenBaiHat());
-                        UpdateTime();
-                        TenBaiHat = mangbaihat.get(pos).getTenBaiHat();
-                        LinkHinhAnh = mangbaihat.get(pos).getHinhBaiHat();
-                    }
-
-                bSkiptostart.setClickable(false);
-                bNext.setClickable(false);
-                Handler handler1 = new Handler();
-                handler1.postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        bSkiptostart.setClickable(true);
-                        bNext.setClickable(true);
-                    }
-                }, 5000);
-                next=false;
-                handler1.removeCallbacks(this);
-                }else {
-                    handler1.postDelayed(this,1000);
-                }
-            }
-        }, 1000);
 
     }
-    public void NhanDataSauClickMiniPlay(){
-        Intent intent=getIntent();
+
+    public void NhanDataSauClickMiniPlay() {
+        Intent intent = getIntent();
         if (intent.hasExtra("miniplay")) {
-            LayDulieutuPlayNhac layDulieutuPlayNhac= (LayDulieutuPlayNhac) intent.getParcelableExtra("miniplay");
+            LayDulieutuPlayNhac layDulieutuPlayNhac = (LayDulieutuPlayNhac) intent.getParcelableExtra("miniplay");
 //            Log.d("BBB", "GetDataFromIntent: "+layDulieutuPlayNhac.getMangbaihat().get(layDulieutuPlayNhac.getPos()).getTenBaiHat());
 ////           mangbaihat.clear();
-            mangbaihat=layDulieutuPlayNhac.getMangbaihat();
-            pos=layDulieutuPlayNhac.getPos();
-            repeat=layDulieutuPlayNhac.isRepeat();
-            checkrandom=layDulieutuPlayNhac.isCheckrandom();
+            mangbaihat = layDulieutuPlayNhac.getMangbaihat();
+            pos = layDulieutuPlayNhac.getPos();
+            repeat = layDulieutuPlayNhac.isRepeat();
+            checkrandom = layDulieutuPlayNhac.isCheckrandom();
 //            mediaPlayer.seekTo(mediaPlayer.getCurrentPosition());
 //            mediaPlayer=Layout_main.mediaPlayerLU;
 //            seekBartime.setProgress(Layout_main.du);
-            Log.d("BBB", "NhanDataSauClickMiniPlay: "+Layout_main.mediaPlayerLU.getCurrentPosition());
+            Log.d("BBB", "NhanDataSauClickMiniPlay: " + Layout_main.mediaPlayerLU.getCurrentPosition());
         }
     }
 }

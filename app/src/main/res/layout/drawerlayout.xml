@@ -13,9 +13,7 @@
         <RelativeLayout
             android:id="@+id/reA1"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_above="@id/reMini"
-            android:layout_marginBottom="-728dp">
+            android:layout_height="match_parent">
 
             <LinearLayout
                 android:id="@+id/linearLayout"
