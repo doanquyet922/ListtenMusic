@@ -7,16 +7,21 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.View;
+import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import com.example.listtenmusic.Adapter.DanhsachTheloaiTheoChudeAdapter;
+import com.example.listtenmusic.Model.BaiHat;
 import com.example.listtenmusic.Model.ChuDe;
+import com.example.listtenmusic.Model.LayDulieutuPlayNhac;
 import com.example.listtenmusic.Model.TheLoai;
 import com.example.listtenmusic.R;
 import com.example.listtenmusic.Service.APIService;
 import com.example.listtenmusic.Service.Dataservice;
+import com.example.listtenmusic.Service.PlayNhacService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,6 +35,8 @@ ChuDe chuDe;
 RecyclerView recyclerViewtheloaitheochude;
 Toolbar toolbar;
 DanhsachTheloaiTheoChudeAdapter  danhsachTheloaiTheoChudeAdapter;
+    private RelativeLayout reMini;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -61,6 +68,32 @@ DanhsachTheloaiTheoChudeAdapter  danhsachTheloaiTheoChudeAdapter;
     }
 
     private void init() {
+        reMini=(RelativeLayout) findViewById(R.id.reMini);
+        reMini.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(DanhsachtheloaitheochudeActivity.this,PlayNhacActivity.class);
+                ArrayList<BaiHat> mangbaihat=PlayNhacActivity.mangbaihat;
+                int pos=PlayNhacActivity.pos;
+                boolean repeat=PlayNhacActivity.repeat;
+                boolean checkrandom=PlayNhacActivity.checkrandom;
+
+                LayDulieutuPlayNhac layDulieutuPlayNhac=new LayDulieutuPlayNhac(mangbaihat,pos,repeat,checkrandom);
+                intent.putExtra("miniplay",layDulieutuPlayNhac);
+                startActivity(intent);
+
+            }
+        });
+        final Handler handler = new Handler();
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                if (PlayNhacService.mediaPlayer != null) {
+                    reMini.setVisibility(View.VISIBLE);
+                }
+                handler.postDelayed(this,300);
+            }
+        }, 300);
         recyclerViewtheloaitheochude=findViewById(R.id.recylerviewtheloaitheochude);
         toolbar=findViewById(R.id.toolbartheloaitheochude);
         setSupportActionBar(toolbar);

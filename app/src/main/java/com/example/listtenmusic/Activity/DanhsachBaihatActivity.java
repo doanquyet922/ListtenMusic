@@ -13,21 +13,25 @@ import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.StrictMode;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import com.example.listtenmusic.Adapter.DanhsachbaihatAdapter;
 import com.example.listtenmusic.Model.Album;
 import com.example.listtenmusic.Model.BaiHat;
+import com.example.listtenmusic.Model.LayDulieutuPlayNhac;
 import com.example.listtenmusic.Model.PlayList;
 import com.example.listtenmusic.Model.QuangCao;
 import com.example.listtenmusic.Model.TheLoai;
 import com.example.listtenmusic.R;
 import com.example.listtenmusic.Service.APIService;
 import com.example.listtenmusic.Service.Dataservice;
+import com.example.listtenmusic.Service.PlayNhacService;
 import com.google.android.material.appbar.CollapsingToolbarLayout;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.squareup.picasso.Picasso;
@@ -43,6 +47,7 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 public class DanhsachBaihatActivity extends AppCompatActivity {
+    RelativeLayout reMini;
     QuangCao quangCao;
     PlayList playList;
     TheLoai theLoai;
@@ -181,6 +186,33 @@ public class DanhsachBaihatActivity extends AppCompatActivity {
     }
 
     private void init() {
+        reMini=(RelativeLayout) findViewById(R.id.reMini);
+        reMini.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(DanhsachBaihatActivity.this,PlayNhacActivity.class);
+                ArrayList<BaiHat> mangbaihat=PlayNhacActivity.mangbaihat;
+                int pos=PlayNhacActivity.pos;
+                boolean repeat=PlayNhacActivity.repeat;
+                boolean checkrandom=PlayNhacActivity.checkrandom;
+
+                LayDulieutuPlayNhac layDulieutuPlayNhac=new LayDulieutuPlayNhac(mangbaihat,pos,repeat,checkrandom);
+                intent.putExtra("miniplay",layDulieutuPlayNhac);
+                startActivity(intent);
+
+            }
+        });
+        final Handler handler = new Handler();
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                if (PlayNhacService.mediaPlayer != null) {
+
+                        reMini.setVisibility(View.VISIBLE);
+                }
+                handler.postDelayed(this,300);
+            }
+        }, 300);
         imdanhsachcakhuc = findViewById(R.id.imdanhsachcakhuc);
         coordinatorLayout = findViewById(R.id.coordinator);
         collapsingToolbarLayout = findViewById(R.id.collapsingtoolbar);

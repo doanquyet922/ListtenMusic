@@ -65,7 +65,6 @@ public class Layout_main extends AppCompatActivity {
     RelativeLayout reMini;
     TabLayout tabLayout;
     ViewPager viewPager;
-public static MediaPlayer mediaPlayerLU;
 public static int du;
     FragmengtOnline fragmengtOnline = new FragmengtOnline();
     FragmentOffline fragmentOffline = new FragmentOffline();
@@ -88,21 +87,16 @@ public static int du;
             msg = "Thiết bị chưa kết nối internet";
         }
         Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
-//        startService(new Intent(Layout_main.this, PlayNhacService.class));
         reMini.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(Layout_main.this,PlayNhacActivity.class);
                 ArrayList<BaiHat> mangbaihat=PlayNhacActivity.mangbaihat;
-//                PlayNhacActivity.bRepeat.setImageResource(R.drawable.repeat_true_playnhac);
                 int pos=PlayNhacActivity.pos;
                 boolean repeat=PlayNhacActivity.repeat;
                 boolean checkrandom=PlayNhacActivity.checkrandom;
 
                 LayDulieutuPlayNhac layDulieutuPlayNhac=new LayDulieutuPlayNhac(mangbaihat,pos,repeat,checkrandom);
-//                intent.putExtra("mangbaihat",mangbaihat);
-//                intent.putExtra("mediaplayer", (CharSequence) mediaPlayer);
-                intent.putExtra("key","001");
                 intent.putExtra("miniplay",layDulieutuPlayNhac);
                 startActivity(intent);
 
@@ -114,13 +108,8 @@ public static int du;
             @Override
             public void run() {
                 if (PlayNhacService.mediaPlayer != null) {
-                    if (PlayNhacService.mediaPlayer.isPlaying()) {
-                        reMini.setVisibility(View.VISIBLE);
-
-                    }
-                }
-                else {
-//                    reMini.setVisibility(View.GONE);
+                    if (PlayNhacService.mediaPlayer.isPlaying()){
+                        reMini.setVisibility(View.VISIBLE);}
                 }
                 handler.postDelayed(this,300);
             }

@@ -40,7 +40,7 @@ public class PlayNhacService extends Service {
     ArrayList<BaiHat> arr;
     public static boolean isNext = false;
     boolean next;
-    public static MediaPlayer mediaPlayer=new MediaPlayer();
+    public static MediaPlayer mediaPlayer;
 
     @Nullable
     @Override
@@ -141,68 +141,34 @@ public class PlayNhacService extends Service {
     private void PlayNhac(String link) {
         try {
             if (mediaPlayer != null) {
-                if (mediaPlayer.isPlaying()) {
                     mediaPlayer.stop();
                     mediaPlayer.reset();
                     mediaPlayer.release();
                     mediaPlayer = null;
-                }
-                mediaPlayer = new MediaPlayer();
-                mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
-                mediaPlayer.setDataSource(link);
-                mediaPlayer.prepare();
-                mediaPlayer.start();
-                mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-                    @Override
-                    public void onCompletion(MediaPlayer mp) {
-                        try {
-                            Thread.sleep(3000);
-                            PlayNhacActivity.bNext.callOnClick();
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
-
-                    }
-                });
             }
-//            if (mediaPlayer == null) {
-//                mediaPlayer = new MediaPlayer();
-//                mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
-//                mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-//                    @Override
-//                    public void onCompletion(MediaPlayer mp) {
-//                        mediaPlayer.stop();
-//                        mediaPlayer.reset();
-//                    }
-//                });
-//            }
+            mediaPlayer = new MediaPlayer();
+            mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+            mediaPlayer.setDataSource(link);
+            mediaPlayer.prepare();
+            mediaPlayer.start();
+            TimeSong();
+            PlayNhacActivity playNhacActivity = new PlayNhacActivity();
+            playNhacActivity.UpdateTime();
+            mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                @Override
+                public void onCompletion(MediaPlayer mp) {
+                    try {
+                        Thread.sleep(3000);
+                        PlayNhacActivity.bNext.callOnClick();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
 
-//            if (!link.equals("")) {
-////                mediaPlayer=new MediaPlayer();
-//                mediaPlayer.setDataSource(link);
-//                mediaPlayer.prepare();
-//            }
-
+                }
+            });
         } catch (IOException e) {
             e.printStackTrace();
         }
-//        mediaPlayer.start();
-//            Log.d("CCC", "init: "+mediaPlayer.getDuration());
-        TimeSong();
-        PlayNhacActivity playNhacActivity = new PlayNhacActivity();
-        playNhacActivity.UpdateTime();
-//        mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-//            @Override
-//            public void onCompletion(MediaPlayer mp) {
-//                isNext=true;
-//                try {
-//                    Thread.sleep(3000);
-//                    PlayNhacActivity.bNext.callOnClick();
-//                } catch (InterruptedException e) {
-//                    e.printStackTrace();
-//                }
-//            }
-//        });
     }
 
     private void TimeSong() {
