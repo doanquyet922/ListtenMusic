@@ -8,20 +8,27 @@ import androidx.fragment.app.FragmentTransaction;
 import androidx.transition.FragmentTransitionSupport;
 import androidx.viewpager.widget.ViewPager;
 
+import android.app.AlertDialog;
+import android.app.Dialog;
+import android.app.DownloadManager;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.graphics.Color;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.StrictMode;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.SeekBar;
 import android.widget.TextView;
@@ -34,6 +41,8 @@ import com.example.listtenmusic.Fragment.FragmentMiniPlay;
 import com.example.listtenmusic.Model.BaiHat;
 import com.example.listtenmusic.Model.LayDulieutuPlayNhac;
 import com.example.listtenmusic.R;
+import com.example.listtenmusic.Service.APIService;
+import com.example.listtenmusic.Service.Dataservice;
 import com.example.listtenmusic.Service.PlayNhacService;
 
 import java.io.IOException;
@@ -41,12 +50,15 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Random;
 
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
 import static com.example.listtenmusic.R.*;
 import static com.example.listtenmusic.R.drawable.pause_playnhac;
 
 public class PlayNhacActivity extends AppCompatActivity {
-
-
+    ImageButton bYeuthich, bDownload;
     Toolbar toolbarplaynhac;
     public static TextView tTimesong, tTimetong;
     public static SeekBar seekBartime;
@@ -56,7 +68,7 @@ public class PlayNhacActivity extends AppCompatActivity {
     public static ViewPagerPlayNhac adapterPlaynhac;
     FragmentDiaNhac fragmentDiaNhac;
     FragmentDanhSachCacBaihat fragmentDanhSachCacBaihat;
-//    public static MediaPlayer mediaPlayer;
+    //    public static MediaPlayer mediaPlayer;
     public static int pos = 0;
     public static boolean repeat = false;
     public static boolean checkrandom = false;
@@ -65,6 +77,7 @@ public class PlayNhacActivity extends AppCompatActivity {
     private boolean iboundservice = false;
     PlayNhacService playNhacService;
     ServiceConnection serviceConnection;
+    private DownloadManager downloadManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -90,7 +103,7 @@ public class PlayNhacActivity extends AppCompatActivity {
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
-                if(mangbaihat.size()>0) {
+                if (mangbaihat.size() > 0) {
                     TenBaiHat = mangbaihat.get(pos).getTenBaiHat();
                     LinkHinhAnh = mangbaihat.get(pos).getHinhBaiHat();
                 }
@@ -327,6 +340,8 @@ public class PlayNhacActivity extends AppCompatActivity {
     }
 
     private void init() {
+        bYeuthich = (ImageButton) findViewById(id.imyeuthich);
+        bDownload = (ImageButton) findViewById(id.imDownload);
         toolbarplaynhac = findViewById(id.toolbarplaynhac);
         tTimesong = findViewById(id.tTimeSong);
         tTimetong = findViewById(id.tTongThoiGian);
@@ -367,6 +382,63 @@ public class PlayNhacActivity extends AppCompatActivity {
             LinkHinhAnh = mangbaihat.get(0).getHinhBaiHat();
 
         }
+        bYeuthich.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (mangbaihat.get(pos).getIDBaiHat()!=null) {
+                    bYeuthich.setImageResource(R.drawable.icon_love_true);
+                    Dataservice dataservice = APIService.getService();
+                    Call<String> callback = dataservice.UpdateLuotThich("1", mangbaihat.get(pos).getIDBaiHat());
+                    callback.enqueue(new Callback<String>() {
+                        @Override
+                        public void onResponse(Call<String> call, Response<String> response) {
+                            String kq = response.body();
+                            if (kq.equals("ok")) {
+                                Toast.makeText(PlayNhacActivity.this, "Đã thích", Toast.LENGTH_SHORT).show();
+                            } else {
+                                Toast.makeText(PlayNhacActivity.this, "Bị lỗi", Toast.LENGTH_SHORT).show();
+                            }
+                        }
+
+                        @Override
+                        public void onFailure(Call<String> call, Throwable t) {
+
+                        }
+                    });
+                    bYeuthich.setEnabled(false);
+                }
+            }
+        });
+
+        bDownload.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (mangbaihat.get(pos).getIDBaiHat()!=null) {
+                    AlertDialog.Builder builder = new AlertDialog.Builder(PlayNhacActivity.this);
+                    builder.setTitle("Tải xuống");
+                    builder.setMessage("Tải xuống:" + mangbaihat.get(pos).getTenBaiHat());
+                    builder.setPositiveButton("Đồng ý", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            downloadManager = (DownloadManager) getSystemService(Context.DOWNLOAD_SERVICE);
+                            Uri uri = Uri.parse("" + mangbaihat.get(pos).getLinkBaiHat());
+                            DownloadManager.Request request = new DownloadManager.Request(uri);
+                            request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
+                            request.setDestinationInExternalPublicDir(Environment.DIRECTORY_MUSIC, mangbaihat.get(pos).getTenBaiHat() + ".mp3");
+                            Long reference = downloadManager.enqueue(request);
+                        }
+                    });
+                    builder.setNegativeButton("Hủy", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialog.cancel();
+                        }
+                    });
+                    AlertDialog dialog = builder.create();
+                    dialog.show();
+                }
+            }
+        });
     }
 
 
@@ -513,11 +585,11 @@ public class PlayNhacActivity extends AppCompatActivity {
 
             repeat = layDulieutuPlayNhac.isRepeat();
             checkrandom = layDulieutuPlayNhac.isCheckrandom();
-            if(repeat==true){
+            if (repeat == true) {
 
                 bRepeat.setImageResource(drawable.repeat_true_playnhac);
             }
-            if ((checkrandom==true)){
+            if ((checkrandom == true)) {
                 bShuffle.setImageResource(drawable.shuffle_true_playnhac);
             }
 
@@ -526,16 +598,15 @@ public class PlayNhacActivity extends AppCompatActivity {
             PlayNhacActivity.tTimetong.setText(simpleDateFormat.format(PlayNhacService.mediaPlayer.getDuration()));
             PlayNhacActivity.seekBartime.setMax(PlayNhacService.mediaPlayer.getDuration());
 
-            if(PlayNhacService.mediaPlayer.isPlaying()){
+            if (PlayNhacService.mediaPlayer.isPlaying()) {
                 bPlay.setImageResource(pause_playnhac);
-            }
-            else {
+            } else {
                 bPlay.setImageResource(drawable.play_playnhac);
             }
 //            mediaPlayer.seekTo(mediaPlayer.getCurrentPosition());
 //            mediaPlayer=Layout_main.mediaPlayerLU;
 //            seekBartime.setProgress(Layout_main.du);
-            Log.d("BBB", "NhanDataSauClickMiniPlay: " );
+            Log.d("BBB", "NhanDataSauClickMiniPlay: ");
         }
     }
 }

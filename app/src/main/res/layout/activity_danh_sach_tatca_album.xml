@@ -17,6 +17,7 @@
     android:id="@+id/recylerviewTatCaAlbum"
     android:layout_height="match_parent"></androidx.recyclerview.widget.RecyclerView>
     <RelativeLayout
+        android:visibility="gone"
         android:layout_alignParentBottom="true"
         android:id="@+id/reMini"
         android:layout_width="wrap_content"

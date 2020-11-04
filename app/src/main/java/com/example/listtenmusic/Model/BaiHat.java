@@ -35,6 +35,11 @@ private String luotThich;
         linkBaiHat = in.readString();
         luotThich = in.readString();
     }
+    public BaiHat(String tenBaiHat, String caSi, String linkBaiHat) {
+        this.tenBaiHat = tenBaiHat;
+        this.caSi = caSi;
+        this.linkBaiHat = linkBaiHat;
+    }
 
     public static final Creator<BaiHat> CREATOR = new Creator<BaiHat>() {
         @Override

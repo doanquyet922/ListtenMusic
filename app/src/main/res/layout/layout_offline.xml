@@ -5,7 +5,6 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
-
     <View
         android:id="@+id/view2"
         android:layout_width="match_parent"
@@ -47,7 +46,6 @@
         app:srcCompat="@drawable/playlistmp3" />
 
     <Button
-
         android:paddingLeft="80dp"
         android:gravity="center_vertical"
         android:id="@+id/bThuviennhac"

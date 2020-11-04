@@ -182,7 +182,11 @@ public class FragmentMiniPlay  extends Fragment {
                 if (PlayNhacService.mediaPlayer != null) {
                     t[0] =PlayNhacActivity.TenBaiHat+"";
                     tTenBaiHat.setText(t[0]);
-                    Picasso.with(getActivity()).load(PlayNhacActivity.LinkHinhAnh).into(imChay);
+                    if(PlayNhacActivity.LinkHinhAnh!=null){
+                    Picasso.with(getActivity()).load(PlayNhacActivity.LinkHinhAnh).into(imChay);}
+                    else {
+                        imChay.setImageResource(R.drawable.cdburning);
+                    }
 //                        String ten=PlayNhacActivity.mangbaihat.get(PlayNhacActivity.pos).getTenBaiHat();
 //                        tTenBaiHat.setText(ten);
 //                        Picasso.with(getActivity()).load(PlayNhacActivity.mangbaihat.get(PlayNhacActivity.pos).getHinhBaiHat()).into(imChay);

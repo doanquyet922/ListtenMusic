@@ -1,11 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.listtenmusic">
-    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
+
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
     <application
+        android:requestLegacyExternalStorage="true"
         android:name=".Adapter.WifiApp"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -13,11 +17,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.AppCompat.Light.NoActionBar">
-
-        <service
-            android:name=".PlaySongService"
-            android:enabled="true"
-            android:exported="true" />
+        <activity android:name=".Activity.ThuVienNhacActivity"></activity>
 
         <activity android:name=".Activity.PlayNhacActivity" />
         <activity android:name=".Activity.DanhSachTatcaAlbumActivity" />
@@ -41,9 +41,11 @@
                 <action android:name="android.net.conn.CONNECTIVITY_CHANGE" />
             </intent-filter>
         </receiver>
-        <service android:name=".Service.PlayNhacService"
-            android:exported="false"
-            android:enabled="true"/>
+
+        <service
+            android:name=".Service.PlayNhacService"
+            android:enabled="true"
+            android:exported="false" />
     </application>
 
 </manifest>

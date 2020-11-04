@@ -20,12 +20,12 @@
         android:layout_above="@id/reMini">
     </androidx.recyclerview.widget.RecyclerView>
     <RelativeLayout
+        android:visibility="gone"
         android:layout_alignParentBottom="true"
         android:id="@+id/reMini"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content">
         <fragment
-
             android:id="@+id/fragmentMini"
             android:name="com.example.listtenmusic.Fragment.FragmentMiniPlay"
             android:layout_width="match_parent"
