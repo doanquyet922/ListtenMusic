@@ -116,7 +116,7 @@
             android:src="@drawable/yeuthich" />
 
         <Button
-            android:id="@+id/bYeuThich"
+            android:id="@+id/bDanhsachYeuThich"
             android:layout_width="match_parent"
             android:layout_height="60dp"
             android:layout_below="@id/bHengio"
@@ -127,7 +127,7 @@
         <ImageView
             android:layout_width="70dp"
             android:layout_height="60dp"
-            android:layout_below="@id/bYeuThich"
+            android:layout_below="@id/bDanhsachYeuThich"
             android:background="@null"
             android:padding="15dp"
             android:scaleType="fitCenter"
@@ -137,7 +137,7 @@
             android:id="@+id/bThongtin"
             android:layout_width="match_parent"
             android:layout_height="60dp"
-            android:layout_below="@id/bYeuThich"
+            android:layout_below="@id/bDanhsachYeuThich"
             android:background="@null"
             android:paddingLeft="-5dp"
             android:text="Thông tin ứng dụng"

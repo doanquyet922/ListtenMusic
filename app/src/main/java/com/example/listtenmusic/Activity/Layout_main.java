@@ -69,6 +69,7 @@ public class Layout_main extends AppCompatActivity {
     RelativeLayout reMini;
     TabLayout tabLayout;
     ViewPager viewPager;
+    Button bHDSD,bTTUD,bDSYT,bHenGio;
 public static int du;
     FragmengtOnline fragmengtOnline = new FragmengtOnline();
     FragmentOffline fragmentOffline = new FragmentOffline();
@@ -122,7 +123,20 @@ public static int du;
     }
 
     private void events() {
-
+        bHDSD.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent=new Intent(Layout_main.this,HuongDanSuDungActivity.class);
+                startActivity(intent);
+            }
+        });
+        bTTUD.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent=new Intent(Layout_main.this,ThongTinUngDungActivity.class);
+                startActivity(intent);
+            }
+        });
     }
     private void checkAndRequestPermissions() {
         String[] permissions = new String[]{
@@ -140,6 +154,10 @@ public static int du;
         }
     }
     private void init() {
+        bHDSD=(Button) findViewById(R.id.bHuongdan);
+        bTTUD=(Button) findViewById(R.id.bThongtin);
+        bDSYT=(Button) findViewById(R.id.bDanhsachYeuThich);
+        bHenGio=(Button) findViewById(R.id.bHengio);
         drawerLayout = (DrawerLayout) findViewById(R.id.drawerLayout);
         bOnline = (Button) findViewById(R.id.bOnline);
         bOffline = (Button) findViewById(R.id.bOffline);
