@@ -137,6 +137,13 @@ public static int du;
                 startActivity(intent);
             }
         });
+        bDSYT.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent=new Intent(Layout_main.this,DanhsachyeuthichActivity.class);
+                startActivity(intent);
+            }
+        });
     }
     private void checkAndRequestPermissions() {
         String[] permissions = new String[]{

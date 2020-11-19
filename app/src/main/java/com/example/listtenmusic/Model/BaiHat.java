@@ -53,6 +53,10 @@ private String luotThich;
         }
     };
 
+    public BaiHat() {
+
+    }
+
     public String getIDBaiHat() {
 return iDBaiHat;
 }

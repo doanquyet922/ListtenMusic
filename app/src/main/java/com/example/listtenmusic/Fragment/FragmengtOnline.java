@@ -35,14 +35,14 @@ ArrayList<QuangCao> quangCao=new ArrayList<>();
         MainViewPagerAdapter mainViewPagerAdapter=new MainViewPagerAdapter(getFragmentManager());
         mainViewPagerAdapter.addFragment(new Fragment_trangchu(),"Trang chủ");
         mainViewPagerAdapter.addFragment(new FragmentVideos(),"Videos");
-        mainViewPagerAdapter.addFragment(new FragmengtBXH(),"BXH");
-        mainViewPagerAdapter.addFragment(new FragmengtNews(),"News");
+//        mainViewPagerAdapter.addFragment(new FragmengtBXH(),"BXH");
+//        mainViewPagerAdapter.addFragment(new FragmengtNews(),"News");
         viewPager.setAdapter(mainViewPagerAdapter);
         tabLayout.setupWithViewPager(viewPager);
         tabLayout.getTabAt(0).setIcon(R.drawable.home_grey);
         tabLayout.getTabAt(1).setIcon(R.drawable.video_grey);
-        tabLayout.getTabAt(2).setIcon(R.drawable.bxh_grey);
-        tabLayout.getTabAt(3).setIcon(R.drawable.news_grey);
+//        tabLayout.getTabAt(2).setIcon(R.drawable.bxh_grey);
+//        tabLayout.getTabAt(3).setIcon(R.drawable.news_grey);
         return view;
     }
 

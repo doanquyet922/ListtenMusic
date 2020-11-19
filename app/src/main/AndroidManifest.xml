@@ -18,7 +18,11 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.AppCompat.Light.NoActionBar">
-        <activity android:name=".Activity.ThongTinUngDungActivity"></activity>
+        <activity android:name=".Activity.DanhsachyeuthichActivity"></activity>
+        <activity
+            android:name=".Activity.PlayVideoActivity"
+            android:configChanges="orientation|screenSize|layoutDirection" />
+        <activity android:name=".Activity.ThongTinUngDungActivity" />
         <activity android:name=".Activity.HuongDanSuDungActivity" />
         <activity android:name=".Activity.ThuVienNhacActivity" />
         <activity android:name=".Activity.PlayNhacActivity" />

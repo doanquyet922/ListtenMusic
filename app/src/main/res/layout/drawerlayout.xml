@@ -49,28 +49,30 @@
             </LinearLayout>
 
             <androidx.viewpager.widget.ViewPager
-
+                android:layout_above="@id/reMini"
                 android:id="@+id/viewpagerLayoutmain"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_below="@id/linearLayout"
-                android:layout_marginTop="0dp" />
-
-        </RelativeLayout>
-
-        <RelativeLayout
-           android:layout_alignParentBottom="true"
-            android:id="@+id/reMini"
-            android:visibility="gone"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content">
-            <fragment
-                android:id="@+id/fragmentMini"
-                android:name="com.example.listtenmusic.Fragment.FragmentMiniPlay"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_marginTop="-2dp"
                 />
+            <RelativeLayout
+                android:layout_alignParentBottom="true"
+                android:id="@+id/reMini"
+                android:visibility="gone"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                >
+                <fragment
+                    android:id="@+id/fragmentMini"
+                    android:name="com.example.listtenmusic.Fragment.FragmentMiniPlay"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    />
+            </RelativeLayout>
         </RelativeLayout>
+
+
     </RelativeLayout>
 
     <RelativeLayout

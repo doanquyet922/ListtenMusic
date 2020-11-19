@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".Activity.DanhsachyeuthichActivity">
+<androidx.appcompat.widget.Toolbar
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:id="@+id/toolbarDanhsachyeuthich"
+    />
+    <androidx.viewpager.widget.ViewPager
+        android:layout_above="@id/myTabLayoutYeuthich"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/viewpagerDanhsachyethich"
+        android:layout_below="@id/toolbarDanhsachyeuthich"
+        />
+    <com.google.android.material.tabs.TabLayout
+        android:layout_alignParentBottom="true"
+        android:id="@+id/myTabLayoutYeuthich"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:background="@null"
+        app:tabTextAppearance="@style/Stype_TabLayout"
+        app:tabIndicatorColor="#FFC107"
+        app:tabMode="fixed"
+        app:tabSelectedTextColor="#FFC107"
+        app:tabTextColor="#6C6666" />
+</RelativeLayout>

@@ -5,6 +5,8 @@ import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
+import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -25,51 +27,53 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class VideosAdapter extends RecyclerView.Adapter<VideosAdapter.ViewHolder>{
+public class SearchBaiHatVideoAdapter extends BaseAdapter {
     Context context;
     ArrayList<BaiHat> arrbaihat;
+    ImageView imVideo,imYeuThichVideo;
+    TextView tTenbaihatvideo,tTenCasivideo;
 
-    public VideosAdapter(Context context, ArrayList<BaiHat> arrbaihat) {
+    public SearchBaiHatVideoAdapter(Context context, ArrayList<BaiHat> arrbaihat) {
         this.context = context;
         this.arrbaihat = arrbaihat;
     }
 
-    @NonNull
-    @Override
-    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        LayoutInflater inflater=LayoutInflater.from(context);
-        View view=inflater.inflate(R.layout.dong_videos,parent,false);
-        return new ViewHolder(view);
-    }
+
 
     @Override
-    public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        BaiHat baiHat=arrbaihat.get(position);
-        holder.tTenbaihatvideo.setText(baiHat.getTenBaiHat());
-        holder.tTenCasivideo.setText(baiHat.getCaSi());
-        Picasso.with(context).load(baiHat.getHinhBaiHat()).into(holder.imVideo);
-    }
-
-    @Override
-    public int getItemCount() {
+    public int getCount() {
         return arrbaihat.size();
     }
 
-    public class ViewHolder extends RecyclerView.ViewHolder{
-ImageView imVideo,imYeuThichVideo;
-TextView tTenbaihatvideo,tTenCasivideo;
+    @Override
+    public BaiHat getItem(int position) {
+        return arrbaihat.get(position);
+    }
 
-    public ViewHolder(@NonNull View itemView) {
-        super(itemView);
+    @Override
+    public long getItemId(int position) {
+        return 0;
+    }
+
+    @Override
+    public View getView(final int position, View convertView, ViewGroup parent) {
+        LayoutInflater inflater=LayoutInflater.from(context);
+        View itemView=inflater.inflate(R.layout.dong_searchbaihatvideo,parent,false);
         imVideo=(ImageView)itemView.findViewById(R.id.imVideo) ;
         imYeuThichVideo=(ImageView)itemView.findViewById(R.id.imyeuthichvideo) ;
         tTenbaihatvideo=(TextView) itemView.findViewById(R.id.tTenBaiHatVideo) ;
         tTenCasivideo=(TextView) itemView.findViewById(R.id.tTenCaSiVideo) ;
+
+        BaiHat baiHat=arrbaihat.get(position);
+        tTenbaihatvideo.setText(baiHat.getTenBaiHat());
+        tTenCasivideo.setText(baiHat.getCaSi());
+        Picasso.with(context).load(baiHat.getHinhBaiHat()).into(imVideo);
+
         itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Intent intent=new Intent(context, PlayVideoActivity.class);
-                intent.putExtra("videos",arrbaihat.get(getPosition()));
+                intent.putExtra("videos",arrbaihat.get(position));
                 context.startActivity(intent);
             }
         });
@@ -78,7 +82,7 @@ TextView tTenbaihatvideo,tTenCasivideo;
             public void onClick(View v) {
                 imYeuThichVideo.setImageResource(R.drawable.icon_love_true);
                 Dataservice dataservice= APIService.getService();
-                Call<String> callback=dataservice.UpdateLuotThich("1",arrbaihat.get(getPosition()).getIDBaiHat());
+                Call<String> callback=dataservice.UpdateLuotThich("1",arrbaihat.get(position).getIDBaiHat());
                 callback.enqueue(new Callback<String>() {
                     @Override
                     public void onResponse(Call<String> call, Response<String> response) {
@@ -98,6 +102,9 @@ TextView tTenbaihatvideo,tTenCasivideo;
                 imYeuThichVideo.setEnabled(false);
             }
         });
+
+
+        return itemView;
+
     }
-}
 }
