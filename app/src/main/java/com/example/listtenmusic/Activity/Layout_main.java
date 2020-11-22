@@ -1,25 +1,36 @@
 package com.example.listtenmusic.Activity;
 
 import android.Manifest;
+import android.app.AlarmManager;
 import android.app.Dialog;
+import android.content.ComponentName;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.media.MediaPlayer;
 import android.os.Bundle;
 
+import android.os.CountDownTimer;
 import android.os.Handler;
+import android.os.IBinder;
 import android.os.Parcelable;
+import android.telecom.ConnectionService;
 import android.util.Log;
 import android.view.Gravity;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.CompoundButton;
+import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
+import android.widget.Switch;
 import android.widget.TabHost;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
@@ -50,11 +61,13 @@ import com.example.listtenmusic.Model.QuangCao;
 import com.example.listtenmusic.R;
 import com.example.listtenmusic.Service.APIService;
 import com.example.listtenmusic.Service.Dataservice;
+import com.example.listtenmusic.Service.HenGioService;
 import com.example.listtenmusic.Service.PlayNhacService;
 import com.google.android.material.tabs.TabItem;
 import com.google.android.material.tabs.TabLayout;
 
 import java.io.Serializable;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -69,12 +82,13 @@ public class Layout_main extends AppCompatActivity {
     RelativeLayout reMini;
     TabLayout tabLayout;
     ViewPager viewPager;
-    Button bHDSD,bTTUD,bDSYT,bHenGio;
-public static int du;
-    FragmengtOnline fragmengtOnline = new FragmengtOnline();
-    FragmentOffline fragmentOffline = new FragmentOffline();
+    Button bHDSD, bTTUD, bDSYT, bHenGio;
+    public static int du;
     FragmentManager fragmentManager = getSupportFragmentManager();
-    FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+    boolean iboundService = false;
+    HenGioService henGioService;
+    ServiceConnection serviceConnection;
+    boolean checkHenGio = false;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -96,14 +110,14 @@ public static int du;
         reMini.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(Layout_main.this,PlayNhacActivity.class);
-                ArrayList<BaiHat> mangbaihat=PlayNhacActivity.mangbaihat;
-                int pos=PlayNhacActivity.pos;
-                boolean repeat=PlayNhacActivity.repeat;
-                boolean checkrandom=PlayNhacActivity.checkrandom;
+                Intent intent = new Intent(Layout_main.this, PlayNhacActivity.class);
+                ArrayList<BaiHat> mangbaihat = PlayNhacActivity.mangbaihat;
+                int pos = PlayNhacActivity.pos;
+                boolean repeat = PlayNhacActivity.repeat;
+                boolean checkrandom = PlayNhacActivity.checkrandom;
 
-                LayDulieutuPlayNhac layDulieutuPlayNhac=new LayDulieutuPlayNhac(mangbaihat,pos,repeat,checkrandom);
-                intent.putExtra("miniplay",layDulieutuPlayNhac);
+                LayDulieutuPlayNhac layDulieutuPlayNhac = new LayDulieutuPlayNhac(mangbaihat, pos, repeat, checkrandom);
+                intent.putExtra("miniplay", layDulieutuPlayNhac);
                 startActivity(intent);
 
             }
@@ -114,10 +128,11 @@ public static int du;
             @Override
             public void run() {
                 if (PlayNhacService.mediaPlayer != null) {
-                    if (PlayNhacService.mediaPlayer.isPlaying()){
-                        reMini.setVisibility(View.VISIBLE);}
+                    if (PlayNhacService.mediaPlayer.isPlaying()) {
+                        reMini.setVisibility(View.VISIBLE);
+                    }
                 }
-                handler.postDelayed(this,300);
+                handler.postDelayed(this, 300);
             }
         }, 300);
     }
@@ -126,25 +141,222 @@ public static int du;
         bHDSD.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent=new Intent(Layout_main.this,HuongDanSuDungActivity.class);
+                Intent intent = new Intent(Layout_main.this, HuongDanSuDungActivity.class);
                 startActivity(intent);
             }
         });
         bTTUD.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent=new Intent(Layout_main.this,ThongTinUngDungActivity.class);
+                Intent intent = new Intent(Layout_main.this, ThongTinUngDungActivity.class);
                 startActivity(intent);
             }
         });
         bDSYT.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent=new Intent(Layout_main.this,DanhsachyeuthichActivity.class);
+                Intent intent = new Intent(Layout_main.this, DanhsachyeuthichActivity.class);
                 startActivity(intent);
             }
         });
+        bHenGio.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                final Dialog dialog = new Dialog(Layout_main.this);
+                dialog.setContentView(R.layout.hengio);
+                final TextView tTG = (TextView) dialog.findViewById(R.id.tThoiGianHen);
+                final Switch aSwitch = (Switch) dialog.findViewById(R.id.switchHenGio);
+                ImageView b15p = (ImageView) dialog.findViewById(R.id.imhengio15p);
+                final ImageView b30p = (ImageView) dialog.findViewById(R.id.imhengio30p);
+                ImageView b60p = (ImageView) dialog.findViewById(R.id.imhengio60p);
+                ImageView b120p = (ImageView) dialog.findViewById(R.id.imhengio120p);
+                final EditText edThoiGianHen = (EditText) dialog.findViewById(R.id.edNhapsophut);
+                if (HenGioService.time <= 0) {
+                    aSwitch.setChecked(false);
+                    aSwitch.setEnabled(false);
+
+                } else {
+                    aSwitch.setChecked(true);
+                    aSwitch.setEnabled(true);
+                }
+
+                final Intent intent = new Intent(Layout_main.this, HenGioService.class);
+                serviceConnection = new ServiceConnection() {
+                    @Override
+                    public void onServiceConnected(ComponentName name, IBinder service) {
+                        HenGioService.BoundExample boundExample = (HenGioService.BoundExample) service;
+                        henGioService = boundExample.getService();
+                        final Handler handler = new Handler();
+                        handler.postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                tTG.setText(getDurationString(henGioService.getTime()));
+                                handler.postDelayed(this, 500);
+                            }
+                        }, 500);
+                        iboundService = true;
+                    }
+
+                    @Override
+                    public void onServiceDisconnected(ComponentName name) {
+                        iboundService = false;
+                    }
+                };
+                bindService(intent, serviceConnection, BIND_AUTO_CREATE);
+                aSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                    @Override
+                    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                        if (isChecked == false) {
+                            HenGioService.time = 0;
+                            dialog.cancel();
+                        }
+                    }
+                });
+                b15p.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        final int t = 15;
+                        Intent intent1 = new Intent(Layout_main.this, HenGioService.class);
+
+                        serviceConnection = new ServiceConnection() {
+                            @Override
+                            public void onServiceConnected(ComponentName name, IBinder service) {
+                                HenGioService.BoundExample boundExample = (HenGioService.BoundExample) service;
+                                henGioService = boundExample.getService();
+//                                CountDownTimer countDownTimer=new CountDownTimer(15*60*1000,1000) {
+//                                    public void onTick(long millisUntilFinished) {
+////                                        edThoiGianHen.setText("seconds remaining: " + getDurationString1(millisUntilFinished/1000));
+//                                        //here you can have your logic to set text to edittext
+//                                    }
+//                                    public void onFinish() {
+//                                        edThoiGianHen.setText("done!");
+//                                    }
+//
+//                                }.start();
+                                henGioService.setTime(t);
+                                iboundService = true;
+                                dialog.cancel();
+                            }
+
+                            @Override
+                            public void onServiceDisconnected(ComponentName name) {
+                                iboundService = false;
+                            }
+                        };
+                        bindService(intent1, serviceConnection, BIND_AUTO_CREATE);
+
+                    }
+                });
+
+                b30p.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        final int t = 30;
+                        Intent intent1 = new Intent(Layout_main.this, HenGioService.class);
+
+                        serviceConnection = new ServiceConnection() {
+                            @Override
+                            public void onServiceConnected(ComponentName name, IBinder service) {
+                                HenGioService.BoundExample boundExample = (HenGioService.BoundExample) service;
+                                henGioService = boundExample.getService();
+                                henGioService.setTime(t);
+                                iboundService = true;
+                                dialog.cancel();
+                            }
+
+                            @Override
+                            public void onServiceDisconnected(ComponentName name) {
+                                iboundService = false;
+                            }
+                        };
+                        bindService(intent1, serviceConnection, BIND_AUTO_CREATE);
+                    }
+                });
+                b60p.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        final int t = 60;
+                        Intent intent1 = new Intent(Layout_main.this, HenGioService.class);
+
+                        serviceConnection = new ServiceConnection() {
+                            @Override
+                            public void onServiceConnected(ComponentName name, IBinder service) {
+                                HenGioService.BoundExample boundExample = (HenGioService.BoundExample) service;
+                                henGioService = boundExample.getService();
+                                henGioService.setTime(t);
+                                iboundService = true;
+                                dialog.cancel();
+                            }
+
+                            @Override
+                            public void onServiceDisconnected(ComponentName name) {
+                                iboundService = false;
+                            }
+                        };
+                        bindService(intent1, serviceConnection, BIND_AUTO_CREATE);
+
+                    }
+                });
+                b120p.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        final int t = 120;
+                        Intent intent1 = new Intent(Layout_main.this, HenGioService.class);
+
+                        serviceConnection = new ServiceConnection() {
+                            @Override
+                            public void onServiceConnected(ComponentName name, IBinder service) {
+                                HenGioService.BoundExample boundExample = (HenGioService.BoundExample) service;
+                                henGioService = boundExample.getService();
+                                SimpleDateFormat simpleDateFormat = new SimpleDateFormat("mm:ss");
+                                henGioService.setTime(t);
+                                iboundService = true;
+                                dialog.cancel();
+                            }
+
+                            @Override
+                            public void onServiceDisconnected(ComponentName name) {
+                                iboundService = false;
+                            }
+                        };
+                        bindService(intent1, serviceConnection, BIND_AUTO_CREATE);
+
+                    }
+                });
+                edThoiGianHen.setOnKeyListener(new View.OnKeyListener() {
+                    @Override
+                    public boolean onKey(View v, int keyCode, KeyEvent event) {
+                        if ((event.getAction() == KeyEvent.ACTION_DOWN) &&
+                                (keyCode == KeyEvent.KEYCODE_ENTER)) {
+                            // Perform action on key press
+                            Intent intent1 = new Intent(Layout_main.this, HenGioService.class);
+                            serviceConnection = new ServiceConnection() {
+                                @Override
+                                public void onServiceConnected(ComponentName name, IBinder service) {
+                                    HenGioService.BoundExample boundExample = (HenGioService.BoundExample) service;
+                                    henGioService = boundExample.getService();
+                                    SimpleDateFormat simpleDateFormat = new SimpleDateFormat("mm:ss");
+                                    henGioService.setTime(Integer.parseInt(edThoiGianHen.getText().toString().trim()));
+                                    iboundService = true;
+                                    dialog.cancel();
+                                }
+
+                                @Override
+                                public void onServiceDisconnected(ComponentName name) {
+                                    iboundService = false;
+                                }
+                            };
+                            bindService(intent1, serviceConnection, BIND_AUTO_CREATE);
+                            return true;
+                        }
+                        return false;
+                    }
+                });
+                dialog.show();
+            }
+        });
     }
+
     private void checkAndRequestPermissions() {
         String[] permissions = new String[]{
                 Manifest.permission.WRITE_EXTERNAL_STORAGE,
@@ -160,11 +372,12 @@ public static int du;
             ActivityCompat.requestPermissions(this, listPermissionsNeeded.toArray(new String[listPermissionsNeeded.size()]), 1);
         }
     }
+
     private void init() {
-        bHDSD=(Button) findViewById(R.id.bHuongdan);
-        bTTUD=(Button) findViewById(R.id.bThongtin);
-        bDSYT=(Button) findViewById(R.id.bDanhsachYeuThich);
-        bHenGio=(Button) findViewById(R.id.bHengio);
+        bHDSD = (Button) findViewById(R.id.bHuongdan);
+        bTTUD = (Button) findViewById(R.id.bThongtin);
+        bDSYT = (Button) findViewById(R.id.bDanhsachYeuThich);
+        bHenGio = (Button) findViewById(R.id.bHengio);
         drawerLayout = (DrawerLayout) findViewById(R.id.drawerLayout);
         bOnline = (Button) findViewById(R.id.bOnline);
         bOffline = (Button) findViewById(R.id.bOffline);
@@ -181,12 +394,39 @@ public static int du;
         MainViewPagerAdapter mainViewPagerAdapter = new MainViewPagerAdapter(getSupportFragmentManager());
         mainViewPagerAdapter.addFragment(new FragmentOffline(), "Offline");
         mainViewPagerAdapter.addFragment(new FragmengtOnline(), "Online");
-        mainViewPagerAdapter.addFragment(new FragmentTimKiem(),"");
+        mainViewPagerAdapter.addFragment(new FragmentTimKiem(), "");
         viewPager.setAdapter(mainViewPagerAdapter);
         tabLayout.setupWithViewPager(viewPager);
         tabLayout.getTabAt(2).setIcon(R.drawable.timkiem);
 
     }
+//    private void ConnectService(final int t){
+//        Intent intent=new Intent(Layout_main.this,HenGioService.class);
+//        Toast.makeText(Layout_main.this, "a", Toast.LENGTH_SHORT).show();
+//
+//        serviceConnection=new ServiceConnection() {
+//            @Override
+//            public void onServiceConnected(ComponentName name, IBinder service) {
+//               HenGioService.BoundExample ibinder= (HenGioService.BoundExample) service;
+//                henGioService=ibinder.getService();
+//                henGioService.setTime(t);
+//                final Handler handler=new Handler();
+//                handler.postDelayed(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        handler.postDelayed(this,250);                            }
+//                },250);
+//                iboundService=true;
+//            }
+//
+//            @Override
+//            public void onServiceDisconnected(ComponentName name) {
+//                iboundService=false;
+//            }
+//        };
+//        bindService(intent,serviceConnection,BIND_AUTO_CREATE);
+//
+//    }
 
     //    public void AddFragment(View view){
 //        FragmentManager fragmentManager1=getSupportFragmentManager();
@@ -223,5 +463,25 @@ public static int du;
 //        });
 //    }
 
+    private String getDurationString(int seconds) {
 
+        int hours = seconds / 3600;
+        int minutes = (seconds % 3600) / 60;
+        seconds = seconds % 60;
+
+        return twoDigitString(hours) + " : " + twoDigitString(minutes) + " : " + twoDigitString(seconds);
+    }
+
+    private String twoDigitString(int number) {
+
+        if (number == 0) {
+            return "00";
+        }
+
+        if (number / 10 == 0) {
+            return "0" + number;
+        }
+
+        return String.valueOf(number);
+    }
 }

@@ -141,10 +141,10 @@ public class PlayNhacService extends Service {
     private void PlayNhac(String link) {
         try {
             if (mediaPlayer != null) {
-                    mediaPlayer.stop();
-                    mediaPlayer.reset();
-                    mediaPlayer.release();
-                    mediaPlayer = null;
+                mediaPlayer.stop();
+                mediaPlayer.reset();
+                mediaPlayer.release();
+                mediaPlayer = null;
             }
             mediaPlayer = new MediaPlayer();
             mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
@@ -159,7 +159,16 @@ public class PlayNhacService extends Service {
                 public void onCompletion(MediaPlayer mp) {
                     try {
                         Thread.sleep(3000);
-                        PlayNhacActivity.bNext.callOnClick();
+                        if (PlayNhacActivity.pos == PlayNhacActivity.mangbaihat.size() - 1) {
+                            if (PlayNhacActivity.repeat == true) {
+                                PlayNhacActivity.bNext.callOnClick();
+                            }
+
+                        }
+                        else {
+                            PlayNhacActivity.bNext.callOnClick();
+                        }
+
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
@@ -175,6 +184,7 @@ public class PlayNhacService extends Service {
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("mm:ss");
         PlayNhacActivity.tTimetong.setText(simpleDateFormat.format(mediaPlayer.getDuration()));
         PlayNhacActivity.seekBartime.setMax(mediaPlayer.getDuration());
+
     }
 
 

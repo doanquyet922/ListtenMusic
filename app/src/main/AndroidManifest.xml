@@ -52,6 +52,10 @@
             android:name=".Service.PlayNhacService"
             android:enabled="true"
             android:exported="false" />
+        <service
+            android:name=".Service.HenGioService"
+            android:enabled="true"
+            android:exported="false" />
     </application>
 
 </manifest>

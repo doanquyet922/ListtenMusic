@@ -4,10 +4,14 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.ApplicationInfo;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
@@ -20,10 +24,12 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.VideoView;
 
+import com.example.listtenmusic.Database;
 import com.example.listtenmusic.Model.BaiHat;
 import com.example.listtenmusic.R;
 import com.example.listtenmusic.Service.APIService;
 import com.example.listtenmusic.Service.Dataservice;
+import com.example.listtenmusic.Service.PlayNhacService;
 import com.google.android.exoplayer2.DefaultLoadControl;
 import com.google.android.exoplayer2.ExoPlaybackException;
 import com.google.android.exoplayer2.ExoPlayerFactory;
@@ -55,32 +61,35 @@ import retrofit2.Response;
 public class PlayVideoActivity extends AppCompatActivity {
     PlayerView playerView;
     ProgressBar progressBar;
-    ImageView bfullscreen,b_backvideo,bLoveVideo;
+    ImageView bfullscreen, b_backvideo, bLoveVideo;
     SimpleExoPlayer simpleExoPlayer;
-    boolean flag=false;
+    boolean flag = false;
     TextView tTenVideo;
-BaiHat baiHat;
+    BaiHat baiHat;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_play_video);
+        if (PlayNhacService.mediaPlayer != null && PlayNhacService.mediaPlayer.isPlaying()) {
+            PlayNhacService.mediaPlayer.pause();
+        }
         init();
         GetDataIntent();
         events();
     }
 
     private void events() {
-        Uri uri=Uri.parse(baiHat.getLinkBaiHat());
-        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        Uri uri = Uri.parse(baiHat.getLinkBaiHat());
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
-        LoadControl loadControl=new DefaultLoadControl();
+        LoadControl loadControl = new DefaultLoadControl();
 
-        BandwidthMeter bandwidthMeter=new DefaultBandwidthMeter();
+        BandwidthMeter bandwidthMeter = new DefaultBandwidthMeter();
 
-        TrackSelector trackSelector=new DefaultTrackSelector(new AdaptiveTrackSelection.Factory(bandwidthMeter));
+        TrackSelector trackSelector = new DefaultTrackSelector(new AdaptiveTrackSelection.Factory(bandwidthMeter));
 
-        simpleExoPlayer= ExoPlayerFactory.newSimpleInstance(PlayVideoActivity.this,trackSelector,loadControl);
+        simpleExoPlayer = ExoPlayerFactory.newSimpleInstance(PlayVideoActivity.this, trackSelector, loadControl);
 //
 //        String userAgent = Util.getUserAgent(MainActivity.this,getApplicationName(MainActivity.this));
 //        DefaultHttpDataSourceFactory factory=new DefaultHttpDataSourceFactory(userAgent,
@@ -89,12 +98,11 @@ BaiHat baiHat;
 //                DefaultHttpDataSource.DEFAULT_READ_TIMEOUT_MILLIS,
 //                true /* allowCrossProtocolRedirects */);
 //        DataSource.Factory dataSourceFactory = new DefaultDataSourceFactory(MainActivity.this, Util.getUserAgent(MainActivity.this, getApplicationName(MainActivity.this)));
-        DefaultHttpDataSourceFactory factory=new DefaultHttpDataSourceFactory(getApplicationName(PlayVideoActivity.this));
-        ExtractorsFactory extractorsFactory=new DefaultExtractorsFactory();
+        DefaultHttpDataSourceFactory factory = new DefaultHttpDataSourceFactory(getApplicationName(PlayVideoActivity.this));
+        ExtractorsFactory extractorsFactory = new DefaultExtractorsFactory();
 
 
-
-        MediaSource mediaSource=new ExtractorMediaSource(uri,factory,extractorsFactory,null,null);
+        MediaSource mediaSource = new ExtractorMediaSource(uri, factory, extractorsFactory, null, null);
 
         playerView.setPlayer(simpleExoPlayer);
         playerView.setKeepScreenOn(true);
@@ -120,11 +128,11 @@ BaiHat baiHat;
             @Override
             public void onPlayerStateChanged(boolean playWhenReady, int playbackState) {
                 //check condition
-                if(playbackState==Player.STATE_BUFFERING){
+                if (playbackState == Player.STATE_BUFFERING) {
                     //when buffering
                     //shoew progress bar
                     progressBar.setVisibility(View.VISIBLE);
-                }else if (playbackState==Player.STATE_READY){
+                } else if (playbackState == Player.STATE_READY) {
                     //When readey
                     //Hide progress bar
                     progressBar.setVisibility(View.GONE);
@@ -165,15 +173,14 @@ BaiHat baiHat;
             @Override
             public void onClick(View v) {
 
-                if(flag==true){
+                if (flag == true) {
                     bfullscreen.setImageResource(R.drawable.ic_fullscreen);
                     setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-                    flag=false;
-                }
-                else {
+                    flag = false;
+                } else {
                     bfullscreen.setImageResource(R.drawable.ic_fullscreen_exit);
                     setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
-                    flag=true;
+                    flag = true;
                 }
             }
         });
@@ -188,16 +195,31 @@ BaiHat baiHat;
             @Override
             public void onClick(View v) {
                 bLoveVideo.setImageResource(R.drawable.icon_love_true);
-                Dataservice dataservice= APIService.getService();
-                Call<String> callback=dataservice.UpdateLuotThich("1",baiHat.getIDBaiHat());
+                Dataservice dataservice = APIService.getService();
+                Call<String> callback = dataservice.UpdateLuotThich("1", baiHat.getIDBaiHat());
                 callback.enqueue(new Callback<String>() {
                     @Override
                     public void onResponse(Call<String> call, Response<String> response) {
-                        String kq=response.body();
-                        if(kq.equals("ok")){
-                            Toast.makeText(PlayVideoActivity.this,"Đã thích",Toast.LENGTH_SHORT).show();
-                        }else {
-                            Toast.makeText(PlayVideoActivity.this,"Bị lỗi",Toast.LENGTH_SHORT).show();
+                        String kq = response.body();
+                        if (kq.equals("ok")) {
+
+                            ArrayList<BaiHat> arr=read();
+                            boolean kt=true;
+                            for(int i=0;i<arr.size();i++){
+                                BaiHat a=arr.get(i);
+                                if(a.getIDBaiHat().trim().equals(baiHat.getIDBaiHat().trim())){
+                                    delete(a.getIDBaiHat().trim());
+                                    insert(baiHat);
+                                    kt=false;
+                                }
+
+                            }
+                            if(kt==true){
+                                insert(baiHat);
+                            }
+                            Toast.makeText(PlayVideoActivity.this, "Đã thích", Toast.LENGTH_SHORT).show();
+                        } else {
+                            Toast.makeText(PlayVideoActivity.this, "Bị lỗi", Toast.LENGTH_SHORT).show();
                         }
                     }
 
@@ -210,6 +232,7 @@ BaiHat baiHat;
             }
         });
     }
+
     @Override
     protected void onPause() {
         super.onPause();
@@ -238,7 +261,7 @@ BaiHat baiHat;
 
 
     private void GetDataIntent() {
-        Intent intent=getIntent();
+        Intent intent = getIntent();
         if (intent != null) {
             if (intent.hasExtra("videos")) {
                 baiHat = intent.getParcelableExtra("videos");
@@ -250,13 +273,45 @@ BaiHat baiHat;
 
     private void init() {
 
-        playerView=(PlayerView) findViewById(R.id.player_view);
-        progressBar=(ProgressBar) findViewById(R.id.progress_bar);
-        bfullscreen=(ImageView) findViewById(R.id.fullscreen);
-        b_backvideo=(ImageView) findViewById(R.id.im_backvideo);
-        bLoveVideo=(ImageView) findViewById(R.id.imLoveVideo);
-        tTenVideo=(TextView) findViewById(R.id.tTenVideo);
+        playerView = (PlayerView) findViewById(R.id.player_view);
+        progressBar = (ProgressBar) findViewById(R.id.progress_bar);
+        bfullscreen = (ImageView) findViewById(R.id.fullscreen);
+        b_backvideo = (ImageView) findViewById(R.id.im_backvideo);
+        bLoveVideo = (ImageView) findViewById(R.id.imLoveVideo);
+        tTenVideo = (TextView) findViewById(R.id.tTenVideo);
 
+    }
+    private void insert(BaiHat baiHat){
+
+        ContentValues contentValues=new ContentValues();
+        contentValues.put("IDBaiHat",baiHat.getIDBaiHat());
+        contentValues.put("tenBaiHat",baiHat.getTenBaiHat());
+        contentValues.put("hinhBaiHat",baiHat.getHinhBaiHat());
+        contentValues.put("caSi",baiHat.getCaSi());
+        contentValues.put("linkBaiHat",baiHat.getLinkBaiHat());
+        contentValues.put("luotThich",baiHat.getLuotThich());
+        SQLiteDatabase sqLiteDatabase= Database.initDatabase(PlayVideoActivity.this,"luudanhsachnhacyeuthich1.db");
+        sqLiteDatabase.insert("BaiHat",null,contentValues);
+    }
+    private   ArrayList<BaiHat> read(){
+        SQLiteDatabase database= Database.initDatabase(PlayVideoActivity.this,"luudanhsachnhacyeuthich1.db");
+        Cursor cursor= database.rawQuery("Select * from BaiHat",null);
+        ArrayList<BaiHat> arr=new ArrayList<>();
+        for(int i=0;i<cursor.getCount();i++){
+            cursor.moveToPosition(i);
+            String idbh=cursor.getString(0);
+            String tenbh=cursor.getString(1);
+            String hinhbh=cursor.getString(2);
+            String casi=cursor.getString(3);
+            String link=cursor.getString(4);
+            String luotthich=cursor.getString(5);
+            arr.add(new BaiHat(idbh,tenbh,hinhbh,casi,link,luotthich));
+        }
+        return arr;
+    }
+    private void delete(String id){
+        SQLiteDatabase database=Database.initDatabase(PlayVideoActivity.this,"luudanhsachnhacyeuthich1.db");
+        database.delete("BaiHat","IDBaiHat=?",new String[] {id+""});
     }
 
 }

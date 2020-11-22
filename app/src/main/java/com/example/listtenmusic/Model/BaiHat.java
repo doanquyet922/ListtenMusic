@@ -41,6 +41,15 @@ private String luotThich;
         this.linkBaiHat = linkBaiHat;
     }
 
+    public BaiHat(String iDBaiHat, String tenBaiHat, String hinhBaiHat, String caSi, String linkBaiHat, String luotThich) {
+        this.iDBaiHat = iDBaiHat;
+        this.tenBaiHat = tenBaiHat;
+        this.hinhBaiHat = hinhBaiHat;
+        this.caSi = caSi;
+        this.linkBaiHat = linkBaiHat;
+        this.luotThich = luotThich;
+    }
+
     public static final Creator<BaiHat> CREATOR = new Creator<BaiHat>() {
         @Override
         public BaiHat createFromParcel(Parcel in) {

@@ -3,12 +3,15 @@
     xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent"
     android:layout_height="wrap_content">
     <ImageView
+        android:src="@drawable/cdburning"
         android:id="@+id/imbaihathot"
         android:layout_margin="3dp"
         android:scaleType="fitXY"
         android:layout_width="80dp"
         android:layout_height="80dp"/>
     <TextView
+        android:paddingLeft="5dp"
+        android:layout_toLeftOf="@id/imLuotthich"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/tTenBaihathot"
@@ -22,6 +25,8 @@
         android:textSize="18sp"
         android:text="Tên bài hát"/>
     <TextView
+        android:paddingLeft="5dp"
+        android:layout_toLeftOf="@id/imLuotthich"
         android:maxWidth="200dp"
         android:textColor="#8c8a8a"
         android:text="Ca si"

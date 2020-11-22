@@ -284,7 +284,6 @@ public class PlayNhacActivity extends AppCompatActivity {
                             pos = mangbaihat.size() - 1;
                         }
                         if (repeat == true) {
-
                             pos += 1;
 
                         }
@@ -609,4 +608,5 @@ public class PlayNhacActivity extends AppCompatActivity {
             Log.d("BBB", "NhanDataSauClickMiniPlay: ");
         }
     }
+
 }
