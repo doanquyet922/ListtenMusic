@@ -176,6 +176,7 @@ public class Layout_main extends AppCompatActivity {
                     aSwitch.setEnabled(false);
 
                 } else {
+                    HenGioService.clickswitch=false;
                     aSwitch.setChecked(true);
                     aSwitch.setEnabled(true);
                 }
@@ -207,6 +208,7 @@ public class Layout_main extends AppCompatActivity {
                     @Override
                     public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                         if (isChecked == false) {
+                            HenGioService.clickswitch=true;
                             HenGioService.time = 0;
                             dialog.cancel();
                         }

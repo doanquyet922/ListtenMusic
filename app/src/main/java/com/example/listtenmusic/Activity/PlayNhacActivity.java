@@ -1,51 +1,65 @@
 package com.example.listtenmusic.Activity;
 
+import androidx.annotation.IdRes;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
-import androidx.transition.FragmentTransitionSupport;
+import androidx.core.app.NotificationCompat;
 import androidx.viewpager.widget.ViewPager;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.DownloadManager;
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.graphics.Color;
-import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
-import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.StrictMode;
 import android.util.Log;
+import android.view.KeyEvent;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
+import android.widget.CompoundButton;
+import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ImageView;
+import android.widget.RemoteViews;
 import android.widget.SeekBar;
+import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.listtenmusic.Adapter.ViewPagerPlayNhac;
+import com.example.listtenmusic.CreateNotification;
 import com.example.listtenmusic.Fragment.FragmentDanhSachCacBaihat;
 import com.example.listtenmusic.Fragment.FragmentDiaNhac;
-import com.example.listtenmusic.Fragment.FragmentMiniPlay;
 import com.example.listtenmusic.Model.BaiHat;
 import com.example.listtenmusic.Model.LayDulieutuPlayNhac;
+import com.example.listtenmusic.NotificationReceiver;
 import com.example.listtenmusic.R;
 import com.example.listtenmusic.Service.APIService;
 import com.example.listtenmusic.Service.Dataservice;
+import com.example.listtenmusic.Service.HenGioService;
+import com.example.listtenmusic.Service.OnClearFromRecentService;
 import com.example.listtenmusic.Service.PlayNhacService;
+import com.squareup.picasso.Picasso;
 
-import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Random;
@@ -58,6 +72,8 @@ import static com.example.listtenmusic.R.*;
 import static com.example.listtenmusic.R.drawable.pause_playnhac;
 
 public class PlayNhacActivity extends AppCompatActivity {
+    BroadcastReceiver receiver;
+    private static final String CHANNEL_ID = "Music_CHANNEL";
     ImageButton bYeuthich, bDownload;
     Toolbar toolbarplaynhac;
     public static TextView tTimesong, tTimetong;
@@ -78,6 +94,8 @@ public class PlayNhacActivity extends AppCompatActivity {
     PlayNhacService playNhacService;
     ServiceConnection serviceConnection;
     private DownloadManager downloadManager;
+    HenGioService henGioService;
+    NotificationManager notificationManager ;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -88,8 +106,8 @@ public class PlayNhacActivity extends AppCompatActivity {
         StrictMode.setThreadPolicy(policy);
 
 
-//        Log.d("BBB", "onCreate: ");
 //        if(iboundservice==true){
+//        Log.d("BBB", "onCreate: ");
 //            unbindService(serviceConnection);
 //            iboundservice=false;
 //        }
@@ -99,6 +117,19 @@ public class PlayNhacActivity extends AppCompatActivity {
         init();
         NhanDataSauClickMiniPlay();
         eventsClick();
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+//        {
+//            createChannel();
+//            registerReceiver(broadcastReceiver, new IntentFilter("TRACKS_TRACKS"));
+//            startService(new Intent(getBaseContext(), OnClearFromRecentService.class));
+//        }
+//        CreateNotification.createNotification(PlayNhacActivity.this, mangbaihat.get(pos),
+//                drawable.ic_pause_black, pos, mangbaihat.size()-1);
+//        createChannel();
+//        registerReceiver(breceiver, new IntentFilter("TRACKS_TRACKS"));
+//        startService(new Intent(getBaseContext(), OnClearFromRecentService.class));
+//        showNotificationPlay();
+
         final Handler handler = new Handler();
         handler.postDelayed(new Runnable() {
             @Override
@@ -111,6 +142,263 @@ public class PlayNhacActivity extends AppCompatActivity {
             }
         }, 500);
 
+    }
+
+    private void createChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationChannel channel = new NotificationChannel(CreateNotification.CHANNEL_ID,
+                    "KOD Dev", NotificationManager.IMPORTANCE_DEFAULT);
+//            CharSequence name = getString(R.string.channel_name);
+//            String description = getString(R.string.channel_description);
+//            int importance = NotificationManager.IMPORTANCE_LOW;
+//            NotificationChannel channel = new NotificationChannel(CHANNEL_ID, name, importance);
+//            channel.setDescription(description);
+            notificationManager = getSystemService(NotificationManager.class);
+            if (notificationManager != null) {
+                notificationManager.cancelAll();
+                notificationManager.createNotificationChannel(channel);
+            }
+        }
+    }
+
+    BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getExtras().getString("actionname");
+            switch (action) {
+                case CreateNotification.ACTION_PREVIUOS:
+                    Log.d("BBB", "onReceive:Pla ");
+                    CreateNotification.createNotification(PlayNhacActivity.this, mangbaihat.get(pos),
+                            drawable.ic_pause_black, pos, mangbaihat.size() - 1);
+                    bSkiptostart.callOnClick();
+                    break;
+                case CreateNotification.ACTION_PLAY: {
+                    Log.d("BBB", "onReceive:Pla ");
+                    if (PlayNhacService.mediaPlayer.isPlaying()) {
+                        CreateNotification.createNotification(PlayNhacActivity.this, mangbaihat.get(pos),
+                                drawable.ic_play_black, pos, mangbaihat.size() - 1);
+                        bPlay.callOnClick();
+                    } else {
+                        CreateNotification.createNotification(PlayNhacActivity.this, mangbaihat.get(pos),
+                                drawable.ic_pause_black, pos, mangbaihat.size() - 1);
+                    }
+                    break;
+                }
+                case CreateNotification.ACTION_NEXT:
+                    CreateNotification.createNotification(PlayNhacActivity.this, mangbaihat.get(pos),
+                            drawable.ic_pause_black, pos, mangbaihat.size() - 1);
+                    bNext.callOnClick();
+                    break;
+            }
+        }
+    };
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.dongho, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case id.menudongho: {
+                final Dialog dialog = new Dialog(PlayNhacActivity.this);
+                dialog.setContentView(R.layout.hengio);
+                final TextView tTG = (TextView) dialog.findViewById(R.id.tThoiGianHen);
+                final Switch aSwitch = (Switch) dialog.findViewById(R.id.switchHenGio);
+                ImageView b15p = (ImageView) dialog.findViewById(R.id.imhengio15p);
+                final ImageView b30p = (ImageView) dialog.findViewById(R.id.imhengio30p);
+                ImageView b60p = (ImageView) dialog.findViewById(R.id.imhengio60p);
+                ImageView b120p = (ImageView) dialog.findViewById(R.id.imhengio120p);
+                final EditText edThoiGianHen = (EditText) dialog.findViewById(R.id.edNhapsophut);
+                if (HenGioService.time <= 0) {
+                    aSwitch.setChecked(false);
+                    aSwitch.setEnabled(false);
+                } else {
+                    HenGioService.clickswitch=false;
+                    aSwitch.setChecked(true);
+                    aSwitch.setEnabled(true);
+                }
+
+                final Intent intent = new Intent(PlayNhacActivity.this, HenGioService.class);
+                serviceConnection = new ServiceConnection() {
+                    @Override
+                    public void onServiceConnected(ComponentName name, IBinder service) {
+                        HenGioService.BoundExample boundExample = (HenGioService.BoundExample) service;
+                        henGioService = boundExample.getService();
+                        final Handler handler = new Handler();
+                        handler.postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                tTG.setText(getDurationString(henGioService.getTime()));
+                                handler.postDelayed(this, 500);
+                            }
+                        }, 500);
+
+                    }
+
+                    @Override
+                    public void onServiceDisconnected(ComponentName name) {
+
+                    }
+                };
+                bindService(intent, serviceConnection, BIND_AUTO_CREATE);
+                aSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                    @Override
+                    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                        if (isChecked == false) {
+                            HenGioService.clickswitch=true;
+                            HenGioService.time = 0;
+                            dialog.cancel();
+                        }
+                    }
+                });
+                b15p.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        final int t = 15;
+                        Intent intent1 = new Intent(PlayNhacActivity.this, HenGioService.class);
+
+                        serviceConnection = new ServiceConnection() {
+                            @Override
+                            public void onServiceConnected(ComponentName name, IBinder service) {
+                                HenGioService.BoundExample boundExample = (HenGioService.BoundExample) service;
+                                henGioService = boundExample.getService();
+//                                CountDownTimer countDownTimer=new CountDownTimer(15*60*1000,1000) {
+//                                    public void onTick(long millisUntilFinished) {
+////                                        edThoiGianHen.setText("seconds remaining: " + getDurationString1(millisUntilFinished/1000));
+//                                        //here you can have your logic to set text to edittext
+//                                    }
+//                                    public void onFinish() {
+//                                        edThoiGianHen.setText("done!");
+//                                    }
+//
+//                                }.start();
+                                henGioService.setTime(t);
+
+                                dialog.cancel();
+                            }
+
+                            @Override
+                            public void onServiceDisconnected(ComponentName name) {
+
+                            }
+                        };
+                        bindService(intent1, serviceConnection, BIND_AUTO_CREATE);
+
+                    }
+                });
+
+                b30p.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        final int t = 30;
+                        Intent intent1 = new Intent(PlayNhacActivity.this, HenGioService.class);
+
+                        serviceConnection = new ServiceConnection() {
+                            @Override
+                            public void onServiceConnected(ComponentName name, IBinder service) {
+                                HenGioService.BoundExample boundExample = (HenGioService.BoundExample) service;
+                                henGioService = boundExample.getService();
+                                henGioService.setTime(t);
+
+                                dialog.cancel();
+                            }
+
+                            @Override
+                            public void onServiceDisconnected(ComponentName name) {
+
+                            }
+                        };
+                        bindService(intent1, serviceConnection, BIND_AUTO_CREATE);
+                    }
+                });
+                b60p.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        final int t = 60;
+                        Intent intent1 = new Intent(PlayNhacActivity.this, HenGioService.class);
+
+                        serviceConnection = new ServiceConnection() {
+                            @Override
+                            public void onServiceConnected(ComponentName name, IBinder service) {
+                                HenGioService.BoundExample boundExample = (HenGioService.BoundExample) service;
+                                henGioService = boundExample.getService();
+                                henGioService.setTime(t);
+
+                                dialog.cancel();
+                            }
+
+                            @Override
+                            public void onServiceDisconnected(ComponentName name) {
+
+                            }
+                        };
+                        bindService(intent1, serviceConnection, BIND_AUTO_CREATE);
+
+                    }
+                });
+                b120p.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        final int t = 120;
+                        Intent intent1 = new Intent(PlayNhacActivity.this, HenGioService.class);
+
+                        serviceConnection = new ServiceConnection() {
+                            @Override
+                            public void onServiceConnected(ComponentName name, IBinder service) {
+                                HenGioService.BoundExample boundExample = (HenGioService.BoundExample) service;
+                                henGioService = boundExample.getService();
+                                SimpleDateFormat simpleDateFormat = new SimpleDateFormat("mm:ss");
+                                henGioService.setTime(t);
+
+                                dialog.cancel();
+                            }
+
+                            @Override
+                            public void onServiceDisconnected(ComponentName name) {
+
+                            }
+                        };
+                        bindService(intent1, serviceConnection, BIND_AUTO_CREATE);
+
+                    }
+                });
+                edThoiGianHen.setOnKeyListener(new View.OnKeyListener() {
+                    @Override
+                    public boolean onKey(View v, int keyCode, KeyEvent event) {
+                        if ((event.getAction() == KeyEvent.ACTION_DOWN) &&
+                                (keyCode == KeyEvent.KEYCODE_ENTER)) {
+                            // Perform action on key press
+                            Intent intent1 = new Intent(PlayNhacActivity.this, HenGioService.class);
+                            serviceConnection = new ServiceConnection() {
+                                @Override
+                                public void onServiceConnected(ComponentName name, IBinder service) {
+                                    HenGioService.BoundExample boundExample = (HenGioService.BoundExample) service;
+                                    henGioService = boundExample.getService();
+                                    SimpleDateFormat simpleDateFormat = new SimpleDateFormat("mm:ss");
+                                    henGioService.setTime(Integer.parseInt(edThoiGianHen.getText().toString().trim()));
+
+                                    dialog.cancel();
+                                }
+
+                                @Override
+                                public void onServiceDisconnected(ComponentName name) {
+
+                                }
+                            };
+                            bindService(intent1, serviceConnection, BIND_AUTO_CREATE);
+                            return true;
+                        }
+                        return false;
+                    }
+                });
+                dialog.show();
+                break;
+            }
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     private void ConnectService(@Nullable final ArrayList<BaiHat> arrbaihat, @Nullable final Integer position) {
@@ -384,7 +672,7 @@ public class PlayNhacActivity extends AppCompatActivity {
         bYeuthich.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (mangbaihat.get(pos).getIDBaiHat()!=null) {
+                if (mangbaihat.get(pos).getIDBaiHat() != null) {
                     bYeuthich.setImageResource(R.drawable.icon_love_true);
                     Dataservice dataservice = APIService.getService();
                     Call<String> callback = dataservice.UpdateLuotThich("1", mangbaihat.get(pos).getIDBaiHat());
@@ -412,7 +700,7 @@ public class PlayNhacActivity extends AppCompatActivity {
         bDownload.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (mangbaihat.get(pos).getIDBaiHat()!=null) {
+                if (mangbaihat.get(pos).getIDBaiHat() != null) {
                     AlertDialog.Builder builder = new AlertDialog.Builder(PlayNhacActivity.this);
                     builder.setTitle("Tải xuống");
                     builder.setMessage("Tải xuống:" + mangbaihat.get(pos).getTenBaiHat());
@@ -487,6 +775,28 @@ public class PlayNhacActivity extends AppCompatActivity {
 //        tTimetong.setText(simpleDateFormat.format(PlayNhacService.mediaPlayer.getDuration()));
 //        seekBartime.setMax(PlayNhacService.mediaPlayer.getDuration());
 //    }
+    private String getDurationString(int seconds) {
+
+        int hours = seconds / 3600;
+        int minutes = (seconds % 3600) / 60;
+        seconds = seconds % 60;
+
+        return twoDigitString(hours) + " : " + twoDigitString(minutes) + " : " + twoDigitString(seconds);
+    }
+
+    private String twoDigitString(int number) {
+
+        if (number == 0) {
+            return "00";
+        }
+
+        if (number / 10 == 0) {
+            return "0" + number;
+        }
+
+        return String.valueOf(number);
+    }
+
     public void UpdateTime() {
         final Handler handler = new Handler();
         handler.postDelayed(new Runnable() {
@@ -596,7 +906,6 @@ public class PlayNhacActivity extends AppCompatActivity {
             SimpleDateFormat simpleDateFormat = new SimpleDateFormat("mm:ss");
             PlayNhacActivity.tTimetong.setText(simpleDateFormat.format(PlayNhacService.mediaPlayer.getDuration()));
             PlayNhacActivity.seekBartime.setMax(PlayNhacService.mediaPlayer.getDuration());
-
             if (PlayNhacService.mediaPlayer.isPlaying()) {
                 bPlay.setImageResource(pause_playnhac);
             } else {
@@ -605,8 +914,119 @@ public class PlayNhacActivity extends AppCompatActivity {
 //            mediaPlayer.seekTo(mediaPlayer.getCurrentPosition());
 //            mediaPlayer=Layout_main.mediaPlayerLU;
 //            seekBartime.setProgress(Layout_main.du);
-            Log.d("BBB", "NhanDataSauClickMiniPlay: ");
+//            Log.d("BBB", "NhanDataSauClickMiniPlay: ");
         }
     }
+
+    private void createNotificationChannel() {
+        // Create the NotificationChannel, but only on API 26+ because
+        // the NotificationChannel class is new and not in the support library
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            CharSequence name = getString(R.string.channel_name);
+            String description = getString(R.string.channel_description);
+            int importance = NotificationManager.IMPORTANCE_DEFAULT;
+            NotificationChannel channel = new NotificationChannel(CHANNEL_ID, name, importance);
+            channel.setDescription(description);
+            // Register the channel with the system; you can't change the importance
+            // or other notification behaviors after this
+            NotificationManager notificationManager = getSystemService(NotificationManager.class);
+            notificationManager.createNotificationChannel(channel);
+        }
+    }
+
+    private PendingIntent onButtonNotificationClick(@IdRes int id) {
+        Intent intent = new Intent(PlayNhacActivity.this, NotificationReceiver.class);
+        intent.putExtra("EXTRA_BUTTON_CLICKED", id);
+        return PendingIntent.getBroadcast(this, id, intent, 0);
+    }
+
+
+    public void showNotificationPlay() {
+        RemoteViews notificationLayout =
+                new RemoteViews(getPackageName(), layout.custom_thongbao);
+        notificationLayout.setOnClickPendingIntent(R.id.im_pre_tb,
+                onButtonNotificationClick(R.id.im_pre_tb));
+        notificationLayout.setOnClickPendingIntent(R.id.im_play_tb,
+                onButtonNotificationClick(R.id.im_play_tb));
+        notificationLayout.setOnClickPendingIntent(R.id.im_next_tb,
+                onButtonNotificationClick(R.id.im_next_tb));
+        notificationLayout.setOnClickPendingIntent(R.id.im_close_tb,
+                onButtonNotificationClick(R.id.im_close_tb));
+        notificationLayout.setTextViewText(R.id.tTenCasiThongBao,mangbaihat.get(pos).getCaSi());
+        notificationLayout.setTextViewText(R.id.tTenBaiHatThongBao,mangbaihat.get(pos).getTenBaiHat());
+//        Picasso.with(PlayNhacActivity.this).load(mangbaihat.get(pos).getHinhBaiHat()).into();
+        Notification
+                notification = new NotificationCompat.Builder(this, CHANNEL_ID)
+                .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+                .setSmallIcon(drawable.ic_library_music)
+                .setCustomContentView(notificationLayout)
+                .build();
+
+        notificationManager =
+                (android.app.NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        notificationManager.notify(Integer.parseInt(mangbaihat.get(pos).getIDBaiHat()), notification);
+
+    }
+
+    public void showNotificationPause() {
+        RemoteViews notificationLayout =
+                new RemoteViews(getPackageName(), layout.custom_thongbao_pause);
+        notificationLayout.setOnClickPendingIntent(R.id.im_pre_tb,
+                onButtonNotificationClick(R.id.im_pre_tb));
+        notificationLayout.setOnClickPendingIntent(R.id.im_play_tb,
+                onButtonNotificationClick(R.id.im_play_tb));
+        notificationLayout.setOnClickPendingIntent(R.id.im_next_tb,
+                onButtonNotificationClick(R.id.im_next_tb));
+        notificationLayout.setOnClickPendingIntent(R.id.im_close_tb,
+                onButtonNotificationClick(R.id.im_close_tb));
+        notificationLayout.setTextViewText(R.id.tTenCasiThongBao,mangbaihat.get(pos).getCaSi());
+        notificationLayout.setTextViewText(R.id.tTenBaiHatThongBao,mangbaihat.get(pos).getTenBaiHat());
+        Notification
+                notification = new NotificationCompat.Builder(this, CHANNEL_ID)
+                .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+                .setSmallIcon(drawable.ic_library_music)
+                .setCustomContentView(notificationLayout)
+                .build();
+        notificationManager =
+                (android.app.NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        notificationManager.notify(Integer.parseInt(mangbaihat.get(pos).getIDBaiHat()), notification);
+
+    }
+
+    private BroadcastReceiver breceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+
+            int id = intent.getIntExtra("EXTRA_BUTTON_CLICKED", -1);
+            int action = intent.getExtras().getInt("EXTRA_BUTTON_CLICKED", -1);
+            switch (action) {
+                case R.id.im_pre_tb: {
+                    Toast.makeText(context, "pre", Toast.LENGTH_SHORT).show();
+                    break;
+                }
+                case R.id.im_play_tb: {
+                    Log.d("BBB", "onReceive: Play");
+                    if (PlayNhacService.mediaPlayer.isPlaying() == true) {
+//                        Log.d("BBB", "onReceive: Pause");
+                        showNotificationPause();
+                        PlayNhacService.mediaPlayer.pause();
+                    } else {
+//                        Log.d("BBB", "onReceive: Play");
+                        showNotificationPlay();
+                        PlayNhacService.mediaPlayer.start();
+                    }
+                    break;
+                }
+                case R.id.im_next_tb: {
+                    Toast.makeText(context, "next", Toast.LENGTH_SHORT).show();
+                    break;
+                }
+                case R.id.im_close_tb: {
+                    Toast.makeText(context, "close", Toast.LENGTH_SHORT).show();
+                    break;
+                }
+            }
+        }
+    };
 
 }

@@ -56,6 +56,7 @@
             android:name=".Service.HenGioService"
             android:enabled="true"
             android:exported="false" />
+        <receiver android:name=".NotificationReceiver"/>
     </application>
 
 </manifest>

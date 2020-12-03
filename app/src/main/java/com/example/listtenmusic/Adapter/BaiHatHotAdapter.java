@@ -82,7 +82,6 @@ public class BaiHatHotAdapter extends RecyclerView.Adapter<BaiHatHotAdapter.View
                     context.startActivity(intent);
                 }
             });
-
             imLuotthich.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {

@@ -163,7 +163,6 @@ public class PlayNhacService extends Service {
                             if (PlayNhacActivity.repeat == true) {
                                 PlayNhacActivity.bNext.callOnClick();
                             }
-
                         }
                         else {
                             PlayNhacActivity.bNext.callOnClick();

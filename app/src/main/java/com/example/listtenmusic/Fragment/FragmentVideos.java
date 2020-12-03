@@ -52,7 +52,6 @@ VideosAdapter videosAdapter;
                 recyclerView.setLayoutManager(linearLayoutManager);
                 recyclerView.setAdapter(videosAdapter);
             }
-
             @Override
             public void onFailure(Call<List<BaiHat>> call, Throwable t) {
 

@@ -10,6 +10,9 @@ import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 
+import com.example.listtenmusic.Activity.PlayNhacActivity;
+import com.example.listtenmusic.R;
+
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -18,7 +21,7 @@ public class HenGioService extends Service {
     IBinder iBinder = new BoundExample();
     public static int time;
     boolean check = false;
-
+    public static boolean clickswitch=false;
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
@@ -31,11 +34,14 @@ public class HenGioService extends Service {
                         time = time - 1;
                     }
                     else {
+                        if(clickswitch==false){
                         Toast.makeText(HenGioService.this, "Hết giờ", Toast.LENGTH_SHORT).show();
                         if(PlayNhacService.mediaPlayer!=null && PlayNhacService.mediaPlayer.isPlaying()){
                             PlayNhacService.mediaPlayer.pause();
+                            PlayNhacActivity.bPlay.setImageResource(R.drawable.play_playnhac);
                         }
                         check=false;
+                        }
                     }
                 }
                 handler.postDelayed(this, 1000);
